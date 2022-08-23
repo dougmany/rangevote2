@@ -43,6 +43,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.Run(builder.Configuration["RunUrl"]);
+    app.UsePathBase(builder.Configuration["FolderPath"]);
+    app.Run($"http://localhost:{builder.Configuration["RunPort"]}");
 }
 
