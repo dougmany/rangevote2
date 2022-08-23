@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using RangeVote2.Data;
 using System.Reflection.PortableExecutable;
@@ -29,7 +30,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles(builder.Configuration["FolderName"]);
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings["{EXTENSION}"] = "{CONTENT TYPE}"; 
+app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
+app.UseStaticFiles();
 
 app.UseRouting();
 
