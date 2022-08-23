@@ -17,6 +17,8 @@ builder.Services.AddSingleton<RangeVoteRepository>();
 
 var app = builder.Build();
 
+app.UsePathBase(builder.Configuration["FolderName"]);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -27,7 +29,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.UseStaticFiles(builder.Configuration["FolderName"]);
 
 app.UseRouting();
 
@@ -43,7 +45,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UsePathBase(builder.Configuration["FolderPath"]);
     app.Run($"http://localhost:{builder.Configuration["RunPort"]}");
 }
 
