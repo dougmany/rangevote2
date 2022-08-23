@@ -110,7 +110,7 @@ else
             message = "Saving...";
             await _repository.PutBallotAsync(new Ballot { Id = Guid.Parse(userId), Candidates = trips });
 
-            _navigationManager.NavigateTo($"/{userId}",true);
+            _navigationManager.NavigateTo($"{userId}",true);
 
         }
     }
