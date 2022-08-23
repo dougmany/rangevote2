@@ -216,7 +216,7 @@ namespace RangeVote2.Data
                 return ballot;
             }
 
-            return new Ballot { Id = guid, Candidates = DefaultCandidates };
+            return new Ballot { Id = guid, Candidates = DefaultCandidates.OrderBy(a => Guid.NewGuid()).ToArray()  };
         }
 
         public async Task PutBallotAsync(Ballot ballot)
