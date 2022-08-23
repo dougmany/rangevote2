@@ -1,6 +1,6 @@
 ﻿@page "/{userId}"
 
-<PageTitle>Range Votet</PageTitle>
+<PageTitle>@ElectionId</PageTitle>
 
 @using RangeVote2.Data
 @inject RangeVoteRepository _repository
@@ -44,10 +44,12 @@ else
     public String userId { get; set; }
     Candidate[]? trips;
     String message;
+    String ElectionId;
 
     protected override async Task OnInitializedAsync()
     {
         trips = _repository.GetBallot(Guid.Parse(userId)).Candidates;
+        ElectionId = _repository.GetElectionId();
     }
     void IncrementScore(String name)
     {

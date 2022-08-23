@@ -266,5 +266,10 @@ namespace RangeVote2.Data
                 return connection.Query<Int32>(query, new { electionID = _config.ElectionId }).FirstOrDefault();
             }
         }
+
+        public String GetElectionId() 
+        {
+            return _config.ElectionId;
+        }
     }
 }
