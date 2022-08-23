@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using RangeVote2.Data;
+using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<ApplicationConfig>(config);
 builder.Services.AddSingleton<IDatabaseBootstrap, DatabaseBootstrap>();
-builder.Services.AddSingleton<RangeVoteRepository> ();
+builder.Services.AddSingleton<RangeVoteRepository>();
 
 var app = builder.Build();
 
@@ -36,4 +37,12 @@ app.MapFallbackToPage("/_Host");
 var dbBoostrap = new DatabaseBootstrap(config);
 dbBoostrap.Setup();
 
-app.Run();
+if (app.Environment.IsDevelopment())
+{
+    app.Run();
+}
+else
+{
+    app.Run($"http://localhost:{builder.Configuration["RunPort"]}");
+}
+
