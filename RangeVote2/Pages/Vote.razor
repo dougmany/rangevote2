@@ -14,7 +14,7 @@ else
 {
     <h1>Trip Vote</h1>
 
-    <P>Rows will <strong>sort themselves</strong> as you click.</P>
+    <p>Rows will <strong>sort themselves</strong> as you click.</p>
 
     <table class="table">
         <thead>
@@ -24,7 +24,7 @@ else
             </tr>
         </thead>
         <tfoot>
-            <p>@message</p>
+            @message
             <button class="btn btn-primary" @onclick="SaveScores">Save</button>
         </tfoot>
         <tbody>
@@ -41,14 +41,15 @@ else
 
 @code {
     [Parameter]
-    public String userId { get; set; }
+    public String? userId { get; set; }
     Candidate[]? trips;
-    String message;
-    String ElectionId;
+    String? message;
+    String? ElectionId;
 
     protected override async Task OnInitializedAsync()
     {
-        trips = _repository.GetBallot(Guid.Parse(userId)).Candidates;
+        var ballot = await _repository.GetBallotAsync(Guid.Parse(userId));
+        trips = ballot.Candidates;
         ElectionId = _repository.GetElectionId();
     }
     void IncrementScore(String name)
@@ -107,7 +108,7 @@ else
     {
         {
             message = "Saving...";
-            _repository.PutBallot(new Ballot { Id = Guid.Parse(userId), Candidates = trips });
+            await _repository.PutBallotAsync(new Ballot { Id = Guid.Parse(userId), Candidates = trips });
 
             _navigationManager.NavigateTo($"/{userId}",true);
 

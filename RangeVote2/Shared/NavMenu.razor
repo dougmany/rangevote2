@@ -21,7 +21,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        voters = _repository.GetVoters();
+        var votersCall = await _repository.GetVotersAsync();
+        voters = votersCall;
     }
 
     bool collapseNavMenu = true;

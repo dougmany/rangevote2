@@ -3,8 +3,6 @@
 @using RangeVote2.Data
 @inject RangeVoteRepository repository
 
-<p>@message</p>
-
 @if (result == null)
 {
 <p><em>Loading...</em></p>
@@ -35,11 +33,11 @@ else
 
 @code {
 
-    Candidate[] result;
-    String message;
+    Candidate[]? result;
 
     protected override async Task OnInitializedAsync()
     {
-       result = repository.GetResult().Candidates;
+        var resultCall = await repository.GetResultAsync();
+        result = resultCall.Candidates;
     }
 }

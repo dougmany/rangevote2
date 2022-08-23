@@ -5,10 +5,11 @@ namespace RangeVote2.Data
 {
     public interface IRangeVoteRepository
     {
-        Ballot GetBallot(Guid id);
-        void PutBallot(Ballot ballot);
-        Ballot GetResult();
-        Int32 GetVoters();
+        Task<Ballot> GetBallotAsync(Guid id);
+        Task PutBallotAsync(Ballot ballot);
+        Task<Ballot> GetResultAsync();
+        Task<Int32> GetVotersAsync();
+        String GetElectionId();
     }
 
     public class RangeVoteRepository : IRangeVoteRepository
@@ -196,80 +197,87 @@ namespace RangeVote2.Data
         }
 
 
-        public Ballot GetBallot(Guid guid)
+        public async Task<Ballot> GetBallotAsync(Guid guid)
         {
-            using (var connection = new SqliteConnection(_config.DatabaseName))
+            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            var candidates = await connection.QueryAsync<Candidate>(
+                "SELECT * FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
+                new { guid = guid, electionID = _config.ElectionId }
+            );
+
+            var ballot = new Ballot
             {
-                Ballot ballot = new Ballot { Id = guid };
-                ballot.Candidates = connection.Query<Candidate>(
-                    "SELECT * FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                    new { guid = guid, electionID = _config.ElectionId }
-                ).ToArray();
-                if (ballot.Candidates.Count() > 0)
-                {
-                    return ballot;
-                }
+                Id = guid,
+                Candidates = candidates.ToArray()
+            };
+            if (ballot.Candidates.Length > 0)
+            {
+                return ballot;
             }
+
             return new Ballot { Id = guid, Candidates = DefaultCandidates };
         }
 
-        public void PutBallot(Ballot ballot)
+        public async Task PutBallotAsync(Ballot ballot)
         {
-            using (var connection = new SqliteConnection(_config.DatabaseName))
+            using var connection = new SqliteConnection(_config.DatabaseName);
+            await connection.ExecuteAsync(
+                @"DELETE FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
+                new { guid = ballot.Id, electionID = _config.ElectionId }
+            );
+
+            var data = ballot.Candidates.Select(c => new DBCandidate
             {
-                connection.Execute(
-                    @"DELETE FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                    new { guid = ballot.Id, electionID = _config.ElectionId }
-                );
+                Guid = ballot.Id.ToString(),
+                Name = c.Name,
+                Score = c.Score,
+                ElectionID = c.ElectionID,
+                Description = c.Description
+            });
 
-                var data = ballot.Candidates.Select(c => new DBCandidate
-                {
-                    Guid = ballot.Id.ToString(),
-                    Name = c.Name,
-                    Score = c.Score,
-                    ElectionID = c.ElectionID,
-                    Description = c.Description
-                });
-
-                String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description) Values (@Guid, @Name, @Score, @ElectionID, @Description)";
-                connection.Execute(query, data);
-            }
+            String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description) Values (@Guid, @Name, @Score, @ElectionID, @Description)";
+            await connection.ExecuteAsync(query, data);
         }
 
-        public Ballot GetResult()
+        public async Task<Ballot> GetResultAsync()
         {
-            using (var connection = new SqliteConnection(_config.DatabaseName))
-            {
-                Ballot ballot = new Ballot { };
-                ballot.Candidates = connection.Query<Candidate>(
+            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            var candidates = await connection.QueryAsync<Candidate>(
                     @"SELECT Name, CAST(ROUND(SUM(Score)/COUNT(DISTINCT Guid))AS SIGNED) AS Score 
-                    FROM candidate
-                    WHERE ElectionID = @electionID
-                    GROUP BY Name 
-                    ORDER BY SUM(Score) DESC;",
+                        FROM candidate
+                        WHERE ElectionID = @electionID
+                        GROUP BY Name 
+                        ORDER BY SUM(Score) DESC;",
                     new { electionID = _config.ElectionId }
-                ).ToArray();
-                if (ballot.Candidates.Count() > 0)
-                {
-                    return ballot;
-                }
+                );
+            var ballot = new Ballot
+            {
+                Candidates = candidates.ToArray()
+            };
+            if (ballot.Candidates.Length > 0)
+            {
+                return ballot;
             }
+
             return new Ballot { Candidates = DefaultCandidates };
         }
 
-        public int GetVoters()
+        public async Task<int> GetVotersAsync()
         {
             var query = "SELECT COUNT(DISTINCT Guid) FROM candidate WHERE ElectionID = @electionID;";
 
-            using (var connection = new SqliteConnection(_config.DatabaseName))
-            {
-                return connection.Query<Int32>(query, new { electionID = _config.ElectionId }).FirstOrDefault();
-            }
+            using var connection = new SqliteConnection(_config.DatabaseName);
+            var voters = await connection.QueryAsync<Int32>(query, new { electionID = _config.ElectionId });
+            return voters.FirstOrDefault();
         }
 
-        public String GetElectionId() 
+        public String GetElectionId()
         {
-            return _config.ElectionId;
+            var electionId = _config.ElectionId;
+
+            return electionId ?? "Range Vote";
         }
     }
 }
