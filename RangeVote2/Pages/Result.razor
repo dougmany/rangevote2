@@ -1,0 +1,45 @@
+﻿@page "/result"
+
+@using RangeVote2.Data
+@inject RangeVoteRepository repository
+
+<p>@message</p>
+
+@if (result == null)
+{
+<p><em>Loading...</em></p>
+}
+else
+{
+<h1>Results</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var candidate in result.OrderByDescending(t => t.Score))
+            {
+        <tr>
+            <td>@candidate.Name</td>
+            <td>@candidate.ScoreString</td>
+        </tr>
+            }
+    </tbody>
+</table>
+
+}
+
+@code {
+
+    Candidate[] result;
+    String message;
+
+    protected override async Task OnInitializedAsync()
+    {
+       result = repository.GetResult().Candidates;
+    }
+}

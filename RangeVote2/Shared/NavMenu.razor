@@ -1,0 +1,33 @@
+﻿@using RangeVote2.Data
+@inject RangeVoteRepository _repository
+
+<div class=@(collapseNavMenu ? "collapse" : null) @onclick=ToggleNavMenu>
+    <h3>Vote!</h3>
+    <p>This is a <a href="https://en.wikipedia.org/wiki/Score_voting">Score Voting system</a>.</p>
+    <p>Similar to the Olympics, give a score from 0 to 9.9 to every trip.</p>
+    <p>It is recommended to give your favorite choice a 9.9 and your lease favorite a 0.</p>
+
+</div>
+<div>
+    @if (voters > 0)
+    {
+        <a href="result">@voters  people have voted.</a>
+    }
+</div>
+
+@code {
+
+    Int32 voters;
+
+    protected override async Task OnInitializedAsync()
+    {
+        voters = _repository.GetVoters();
+    }
+
+    bool collapseNavMenu = true;
+
+    void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,114 @@
+﻿@page "/{userId}"
+
+<PageTitle>Range Votet</PageTitle>
+
+@using RangeVote2.Data
+@inject RangeVoteRepository _repository
+@inject NavigationManager _navigationManager
+
+@if (trips == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>Trip Vote</h1>
+
+    <P>Rows will <strong>sort themselves</strong> as you click.</P>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th style="width:200px;">Score</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <p>@message</p>
+            <button class="btn btn-primary" @onclick="SaveScores">Save</button>
+        </tfoot>
+        <tbody>
+            @foreach (var trip in trips.OrderByDescending(t => t.Score))
+            {
+                <tr>
+                    <td><h4>@trip.Name</h4>@trip.Description</td>
+                    <td><button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name))">-</button> <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name))">-</button> @trip.ScoreString <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name))">+</button> <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name))">+</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public String userId { get; set; }
+    Candidate[]? trips;
+    String message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        trips = _repository.GetBallot(Guid.Parse(userId)).Candidates;
+    }
+    void IncrementScore(String name)
+    {
+        var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+        if (trip != null)
+        {
+            if (trip.Score < 90)
+            {
+                trip.Score += 10;
+            }
+        }
+    }
+
+    void IncrementScorePt(String name)
+    {
+        var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+        if (trip != null)
+        {
+            if (trip.Score < 99)
+            {
+                trip.Score++;
+            }
+        }
+    }
+
+    void DecrementScore(String name)
+    {
+        var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+        if (trip != null)
+        {
+            if (trip.Score > 10)
+            {
+                trip.Score -= 10;
+            }
+            else if (trip.Score <= 10)
+            {
+                trip.Score = 0;
+            }
+        }
+    }
+
+    void DecrementScorePt(String name)
+    {
+        var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+        if (trip != null)
+        {
+            if (trip.Score > 0)
+            {
+                trip.Score--;
+            }
+        }
+    }
+
+    async Task SaveScores()
+    {
+        {
+            message = "Saving...";
+            _repository.PutBallot(new Ballot { Id = Guid.Parse(userId), Candidates = trips });
+
+            _navigationManager.NavigateTo($"/{userId}",true);
+
+        }
+    }
+}
