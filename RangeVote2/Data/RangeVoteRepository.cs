@@ -11,6 +11,7 @@ namespace RangeVote2.Data
         Task<Ballot> GetResultAsync();
         Task<Int32> GetVotersAsync();
         String GetElectionId();
+        List<String> GetElectionIds();
     }
 
     public class RangeVoteRepository : IRangeVoteRepository
@@ -53,17 +54,20 @@ namespace RangeVote2.Data
                 new { guid = ballot.Id, electionID = _config.ElectionId }
             );
 
-            var data = ballot.Candidates.Select(c => new DBCandidate
+            if (ballot.Candidates is not null)
             {
-                Guid = ballot.Id.ToString(),
-                Name = c.Name,
-                Score = c.Score,
-                ElectionID = c.ElectionID,
-                Description = c.Description
-            });
+                var data = ballot.Candidates.Select(c => new DBCandidate
+                {
+                    Guid = ballot.Id.ToString(),
+                    Name = c.Name,
+                    Score = c.Score,
+                    ElectionID = c.ElectionID,
+                    Description = c.Description
+                });
 
-            String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description) Values (@Guid, @Name, @Score, @ElectionID, @Description)";
-            await connection.ExecuteAsync(query, data);
+                String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description) Values (@Guid, @Name, @Score, @ElectionID, @Description)";
+                await connection.ExecuteAsync(query, data);
+            }
         }
 
         public async Task<Ballot> GetResultAsync()
@@ -105,6 +109,11 @@ namespace RangeVote2.Data
 
             return electionId ?? "Range Vote";
         }
+        
+        public List<String> GetElectionIds() 
+        {
+            return DefaultCandidates.Select(dc => dc.ElectionID ?? "").Where(e => e != "").Distinct().ToList();
+        }
 
         public Candidate[] DefaultCandidates
         {
@@ -112,8 +121,13 @@ namespace RangeVote2.Data
             {
                 string json = File.ReadAllText("ballots.json");
                 var allBallots = JsonConvert.DeserializeObject<Candidate[]>(json);
+                if (allBallots is not null)
+                {
+                    return allBallots.Where(b => b.ElectionID == _config.ElectionId).ToArray();
+                }
+
+                return new Candidate[] { new Candidate() };
                 
-                return allBallots.Where(b => b.ElectionID == _config.ElectionId).ToArray();
             }
         }
     }
