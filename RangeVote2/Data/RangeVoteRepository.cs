@@ -119,7 +119,7 @@ namespace RangeVote2.Data
         {
             get
             {
-                string json = File.ReadAllText("ballots.json");
+                string json = File.ReadAllText("Ballots.json");
                 var allBallots = JsonConvert.DeserializeObject<Candidate[]>(json);
                 if (allBallots is not null)
                 {
