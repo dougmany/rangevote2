@@ -1,19 +1,19 @@
 [
-    {
+  {
     "Name": "Alaska",
-    "Description": "Rugged mountains meet chilling sea.  Wildlife and majestic scenary are everywhere.",
+    "Description": "Rugged mountains meet chilling sea.  Wildlife and majestic scenery are everywhere.",
     "Score": 50,
     "ElectionId": "Test1"
   },
   {
     "Name": "Hawaii",
-    "Description": "Subropical islands wiled with snad sea and volcanic mountains.  Sea life and sun prevails.",
+    "Description": "Subtropical islands filled with sand, sea, and volcanic mountains.  Sea life and sun with a laid back vibe.",
     "Score": 50,
     "ElectionId": "Test1"
   },
   {
     "Name": "Rocky Mountains",
-    "Description": "Tall mountains and high lakes.  Unbeatable scenary and cool fresh air.",
+    "Description": "Tall mountains and high lakes.  Unbeatable scenery and cool fresh air.",
     "Score": 50,
     "ElectionId": "Test1"
   },
