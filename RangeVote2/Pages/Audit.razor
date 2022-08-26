@@ -1,0 +1,47 @@
+﻿@page "/audit"
+
+<PageTitle>@ElectionId</PageTitle>
+
+@using RangeVote2.Data
+@inject RangeVoteRepository _repository
+
+@if (ballots == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>Audit</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>GUID</th>
+                <th>Name</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var candidate in ballots.OrderBy(c => c.Guid).ThenByDescending(c => c.Score))
+            {
+                <tr>
+                    <td>@candidate.Guid</td>
+                    <td>@candidate.Name</td>
+                    <td>@candidate.Score</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<DBCandidate>? ballots;
+    String? ElectionId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ballots = await _repository.GetBallotsAsync();
+
+        ElectionId = _repository.GetElectionId();
+    }
+}

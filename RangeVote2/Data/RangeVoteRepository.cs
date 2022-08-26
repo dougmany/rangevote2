@@ -7,6 +7,7 @@ namespace RangeVote2.Data
     public interface IRangeVoteRepository
     {
         Task<Ballot> GetBallotAsync(Guid id);
+        Task<List<DBCandidate>> GetBallotsAsync();
         Task PutBallotAsync(Ballot ballot);
         Task<Ballot> GetResultAsync();
         Task<Int32> GetVotersAsync();
@@ -44,6 +45,17 @@ namespace RangeVote2.Data
             }
 
             return new Ballot { Id = guid, Candidates = DefaultCandidates };
+        }
+        public async Task<List<DBCandidate>> GetBallotsAsync()
+        {
+            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            var ballots = await connection.QueryAsync<DBCandidate>(
+                @"SELECT * FROM candidate WHERE ElectionID = @electionID;",
+                new { electionID = _config.ElectionId }
+            );
+
+            return ballots.ToList();
         }
 
         public async Task PutBallotAsync(Ballot ballot)
