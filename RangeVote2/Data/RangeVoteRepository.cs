@@ -135,7 +135,10 @@ namespace RangeVote2.Data
                 var allBallots = JsonConvert.DeserializeObject<Candidate[]>(json);
                 if (allBallots is not null)
                 {
-                    return allBallots.Where(b => b.ElectionID == _config.ElectionId).ToArray();
+                    return allBallots.Where(b => b.ElectionID == _config.ElectionId)
+                        .OrderBy(b => b.Score)
+                        .ThenBy(b => Guid.NewGuid())
+                        .ToArray();
                 }
 
                 return new Candidate[] { new Candidate() };

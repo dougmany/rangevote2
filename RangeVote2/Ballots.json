@@ -48,7 +48,7 @@
     "ElectionId": "2019Vacation"
   },
   {
-    "Name": "Kuai",
+    "Name": "Kauai",
     "Description": "",
     "Score": 50,
     "ElectionId": "2019Vacation"
@@ -78,7 +78,7 @@
     "ElectionId": "2019Vacation"
   },
   {
-    "Name": "Nova Vallarta",
+    "Name": "Nuevo Vallarta",
     "Description": "",
     "Score": 50,
     "ElectionId": "2019Vacation"
@@ -208,5 +208,101 @@
     "Description": "",
     "Score": 50,
     "ElectionID": "2023Vacation"
+  },
+  {
+    "Name": "Channel Islands",
+    "Description": "",
+    "Score": 50,
+    "ElectionID": "2023Vacation"
+  },
+  {
+    "Name": "Playa de las Ánimas",
+    "Description": "A lovely remote beach, accesible by water taxi.  It has a small fishing village and some palapa (thatched-roof) restaurants offering fresh seafood.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Playa de Quimixto",
+    "Description": "This beach, just beyond Las Ánimas, has a waterfall accessible by half-hour hike or by hiring a pony on the beach to take you up.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Jardín Botánico de Vallarta (Vallarta Botanical Gardens)",
+    "Description": "Head for the tropical highlands of the Sierra Madre mountains and wander the well-curated Jardín Botánico de Vallarta (Vallarta Botanical Gardens), home to one of Mexico's most extensive orchid collections and a fascinating variety of native plants and birds.  Stroll through wooded grounds colored with bromeliads, succulents and brilliant hummingbirds, make your way down a jungle trail to the tranquil shores of Río Horcones, where you can cap off the visit with a refreshing dip in a boulder-strewn river. ",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Museo del Cuale",
+    "Description": "This tiny museam near the western end of Isla Cuale has a small collection of beautifule potery, grinding stones, clay figurines and other ancient objects.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Fishing charter",
+    "Description": "Prime catches are sailfiish, marlin, tunas ,red snapper and sea bass.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Snorkling Charter",
+    "Description": " Snorkeling tour to the Marietas Islands, visiting the hidden beach. You also see dolphins, turtles, manta rays, and whales, while underwater you can check out a colorful array of tropical fish.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Hacienda El Divisadero",
+    "Description": "A vast ranch 90 minutes south of Puerto Vallarta offers a slew of fun activites including horseback excursions to local petroglpths, swimming in a gourgeous river and tour of  the distillery where they produce knowck-your-socks-off Caicilla (a taquilla-like distillation of wild agave).  The onlsite restaurant serves delicious meals including steaks, Mexican standdsas and fabulous mole pablano.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Marigalante pirate ship",
+    "Description": "A reporduction Spanish galleon that does pirate--themed daytime cruises from 9am to 4 pm",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Aquaventuras Park",
+    "Description": "Offers 10 waterslides, a lazy river swimming pool, dailt dolphin shows and opportunities to play with dolphins and sea lions.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "ChocoMuseo",
+    "Description": "ChocoMuseo chocolate factory will tell you everything you ever wanted to know about Mexican cacao and chocolate. We offer workshops where you will learn how to make chocolate from Bean to Bar or truffles with ganache.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "Bucerias",
+    "Description": "A charming antidote to the hustle and bustle of nearby Puerto Vallarta. You’ll meet the friendly locals and enjoy beautiful beaches, fantastic dining, outdoor activities and art galleries. Locals congregate in the small plaza in the center of town or head for the beach for some sun and unfettered mountain and bay views. Beyond the beaches of Bucerias, you’ll find superb dining, flea markets laden with special treasures, art galleries, and pubs. Once you’ve tired of the sun, meander through the flea market off the main plaza and tour the residential side of Bucerias, complete with boutique shopping and quality restaurants like La Quinta di Francesco and Adriatico. Some of the best art galleries in town include Splurge Art Gallery, showcasing emerging local artists and designer pewter. On Thursday evenings, participate in the local art walk, and on Sundays, visit the authentic Mexican market.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "A day at the hotel pool and beach",
+    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "A second day at the hotel pool and beach",
+    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "A third day at the hotel pool and beach",
+    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
+  },
+  {
+    "Name": "A fourth day at the hotel pool and beach",
+    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+    "Score": 50,
+    "ElectionID": "2023SpringBreak"
   }
 ]
