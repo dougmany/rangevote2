@@ -32,12 +32,17 @@ else
 }
 
 @code {
-
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public String? ElectionId { get; set; }
     Candidate[]? result;
 
     protected override async Task OnInitializedAsync()
     {
-        var resultCall = await repository.GetResultAsync();
-        result = resultCall.Candidates;
+        if (ElectionId is not null && ElectionId != "")
+        {
+            var resultCall = await repository.GetResultAsync(ElectionId);
+            result = resultCall.Candidates;
+        }
     }
 }

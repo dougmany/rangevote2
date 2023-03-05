@@ -35,13 +35,16 @@ else
 }
 
 @code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public String? ElectionId { get; set; }
     List<DBCandidate>? ballots;
-    String? ElectionId;
 
     protected override async Task OnInitializedAsync()
     {
-        ballots = await _repository.GetBallotsAsync();
-
-        ElectionId = _repository.GetElectionId();
+        if (ElectionId is not null && ElectionId != "")
+        {
+             ballots = await _repository.GetBallotsAsync(ElectionId);
+        }
     }
 }

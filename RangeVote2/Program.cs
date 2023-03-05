@@ -7,7 +7,7 @@ using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
-var config = new ApplicationConfig { DatabaseName = builder.Configuration["DatabaseName"], ElectionId = builder.Configuration["ElectionId"] };
+var config = new ApplicationConfig { DatabaseName = builder.Configuration["DatabaseName"], ElectionIds = builder.Configuration["ElectionIds"].Split(",") };
 
 // Add services to the container.
 builder.Services.AddRazorPages();

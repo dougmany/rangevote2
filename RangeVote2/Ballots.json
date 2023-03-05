@@ -217,92 +217,128 @@
   },
   {
     "Name": "Playa de las Ánimas",
-    "Description": "A lovely remote beach, accesible by water taxi.  It has a small fishing village and some palapa (thatched-roof) restaurants offering fresh seafood.",
+    "Description": "A lovely remote beach, accessible by water taxi.  It has a small fishing village and some palapa (thatched-roof) restaurants offering fresh seafood.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Playa de Quimixto",
     "Description": "This beach, just beyond Las Ánimas, has a waterfall accessible by half-hour hike or by hiring a pony on the beach to take you up.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Jardín Botánico de Vallarta (Vallarta Botanical Gardens)",
     "Description": "Head for the tropical highlands of the Sierra Madre mountains and wander the well-curated Jardín Botánico de Vallarta (Vallarta Botanical Gardens), home to one of Mexico's most extensive orchid collections and a fascinating variety of native plants and birds.  Stroll through wooded grounds colored with bromeliads, succulents and brilliant hummingbirds, make your way down a jungle trail to the tranquil shores of Río Horcones, where you can cap off the visit with a refreshing dip in a boulder-strewn river. ",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Museo del Cuale",
-    "Description": "This tiny museam near the western end of Isla Cuale has a small collection of beautifule potery, grinding stones, clay figurines and other ancient objects.",
+    "Description": "This tiny museum near the western end of Isla Cuale has a small collection of beautiful pottery, grinding stones, clay figurines and other ancient objects.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Fishing charter",
-    "Description": "Prime catches are sailfiish, marlin, tunas ,red snapper and sea bass.",
+    "Description": "Prime catches are sailfish, marlin, tunas ,red snapper and sea bass.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
-    "Name": "Snorkling Charter",
+    "Name": "Snorkeling Charter",
     "Description": " Snorkeling tour to the Marietas Islands, visiting the hidden beach. You also see dolphins, turtles, manta rays, and whales, while underwater you can check out a colorful array of tropical fish.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Hacienda El Divisadero",
-    "Description": "A vast ranch 90 minutes south of Puerto Vallarta offers a slew of fun activites including horseback excursions to local petroglpths, swimming in a gourgeous river and tour of  the distillery where they produce knowck-your-socks-off Caicilla (a taquilla-like distillation of wild agave).  The onlsite restaurant serves delicious meals including steaks, Mexican standdsas and fabulous mole pablano.",
+    "Description": "A vast ranch 90 minutes south of Puerto Vallarta offers a slew of fun activities including horseback excursions to local petroglphs, swimming in a gorgeous river and tour of  the distillery where they produce knock-your-socks-off Caicilla (a tequila-like distillation of wild agave).  The on site restaurant serves delicious meals including steaks, Mexican standards and fabulous mole pablano.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Marigalante pirate ship",
-    "Description": "A reporduction Spanish galleon that does pirate--themed daytime cruises from 9am to 4 pm",
+    "Description": "A reproduction Spanish galleon that does pirate--themed daytime cruises from 9am to 4 pm",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Aquaventuras Park",
-    "Description": "Offers 10 waterslides, a lazy river swimming pool, dailt dolphin shows and opportunities to play with dolphins and sea lions.",
+    "Description": "Offers 10 waterslides, a lazy river swimming pool, daily dolphin shows and opportunities to play with dolphins and sea lions.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "ChocoMuseo",
     "Description": "ChocoMuseo chocolate factory will tell you everything you ever wanted to know about Mexican cacao and chocolate. We offer workshops where you will learn how to make chocolate from Bean to Bar or truffles with ganache.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "Bucerias",
     "Description": "A charming antidote to the hustle and bustle of nearby Puerto Vallarta. You’ll meet the friendly locals and enjoy beautiful beaches, fantastic dining, outdoor activities and art galleries. Locals congregate in the small plaza in the center of town or head for the beach for some sun and unfettered mountain and bay views. Beyond the beaches of Bucerias, you’ll find superb dining, flea markets laden with special treasures, art galleries, and pubs. Once you’ve tired of the sun, meander through the flea market off the main plaza and tour the residential side of Bucerias, complete with boutique shopping and quality restaurants like La Quinta di Francesco and Adriatico. Some of the best art galleries in town include Splurge Art Gallery, showcasing emerging local artists and designer pewter. On Thursday evenings, participate in the local art walk, and on Sundays, visit the authentic Mexican market.",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "A day at the hotel pool and beach",
     "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "A second day at the hotel pool and beach",
     "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "A third day at the hotel pool and beach",
     "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
   },
   {
     "Name": "A fourth day at the hotel pool and beach",
     "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
     "Score": 50,
-    "ElectionID": "2023SpringBreak"
+    "ElectionID": "2023SpringBreakActivities"
+  },
+  {
+    "Name": "Red Cabbage Cafe",
+    "Description": "Casual atmosphere with eclectic and bohemian artwork.  The food is serious and features old recipes and uncommon indigenous sauces",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
+  },
+  {
+    "Name": "Paris Cafe",
+    "Description": "You could easily miss this hole-in-the-wall bakery, but don't!  The flamboyant French owner bakes fabulous sweet and savory goodies, including eclairs, fruit tarts, quiches and chocolate-almond croissants.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
+  },
+  {
+    "Name": "Pancho's Takos",
+    "Description": "Drawing a regular nighttime crowd, this taqueria servers delicious tacos al pastor until the wee hours.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
+  },
+  {
+    "Name": "Cafe des Artistes",
+    "Description": "Many consider this to be Ballarta's finest restaurant.  You're sure to enjoy this romantic ambiance and exquisite fusion of French and Mexican influences.  The service is formal but unobtrusive, and reservations are recommended.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
+  },
+  {
+    "Name": "El Arrayan Cosina Tradicional",
+    "Description": "Owner Carmen Porras takes special pleasure in rescuing old family recipes from obscurity, with an emphasis on fresh local ingredients.  Specialties include crispy duck carnitas with orange sauce, and rib-eye steak marinated in Mexican spices and tequila.  The restaurant, with its open kitchen and romantic courtyard, also serves as a venue for monthly cooking classes.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
+  },
+  {
+    "Name": "Gaby's'",
+    "Description": "This bright and cheerful family-run place with upstairs seating and tree-shaded back patio has been serving dependably tasty Mexican classics; it is best at lunchtime when the daily pix-fixe menu including main dish, soup, and agua fresca cost only M$59.",
+    "Score": 50,
+    "ElectionID": "2023SpringBreakRestuarants"
   }
 ]

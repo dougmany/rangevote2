@@ -1,12 +1,12 @@
-﻿@page "/{userId}"
+﻿@page "/vote"
 
-<PageTitle>@ElectionId</PageTitle>
+<PageTitle>@electionId</PageTitle>
 
 @using RangeVote2.Data
 @inject RangeVoteRepository _repository
 @inject NavigationManager _navigationManager
 
-@if (trips == null)
+@if (candidates == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -28,7 +28,7 @@ else
             <button class="btn btn-primary" @onclick="SaveScores">Save</button>
         </tfoot>
         <tbody>
-            @foreach (var trip in trips.OrderByDescending(t => t.Score))
+            @foreach (var trip in candidates.OrderByDescending(t => t.Score))
             {
                 <tr>
                     <td><h4>@trip.Name</h4>@trip.Description</td>
@@ -41,26 +41,27 @@ else
 
 @code {
     [Parameter]
+    [SupplyParameterFromQuery]
     public String? userId { get; set; }
-    Candidate[]? trips;
+    [Parameter]
+    [SupplyParameterFromQuery] 
+    public String? electionId { get; set; }
+    Candidate[]? candidates;
     String? message;
-    String? ElectionId;
 
     protected override async Task OnInitializedAsync()
     {
-        if (userId is not null && userId is not "")
+        if (userId is not null && userId is not "" && electionId is not null && electionId is not "")
         {
-            var ballot = await _repository.GetBallotAsync(Guid.Parse(userId));
-            trips = ballot.Candidates;
+            var ballot = await _repository.GetBallotAsync(Guid.Parse(userId), electionId);
+            candidates = ballot.Candidates;
         }
-
-        ElectionId = _repository.GetElectionId();
     }
     void IncrementScore(String name)
     {
-        if (trips is not null)
+        if (candidates is not null)
         {
-            var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
             if (trip != null)
             {
                 if (trip.Score < 90)
@@ -74,9 +75,9 @@ else
     void IncrementScorePt(String name)
     {
 
-        if (trips != null)
+        if (candidates != null)
         {
-            var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
 
             if (trip is not null && trip.Score < 99)
             {
@@ -87,9 +88,9 @@ else
 
     void DecrementScore(String name)
     {
-        if (trips != null)
+        if (candidates != null)
         {
-            var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
             if (trip != null)
             {
                 if (trip.Score > 10)
@@ -106,9 +107,9 @@ else
 
     void DecrementScorePt(String name)
     {
-        if (trips != null)
+        if (candidates != null)
         {
-            var trip = trips.Where(t => t.Name == name).FirstOrDefault();
+            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
             if (trip != null)
             {
                 if (trip.Score > 0)
@@ -121,12 +122,12 @@ else
 
     async Task SaveScores()
     {
-        if (userId is not null && userId != "")
+        if (userId is not null && userId != "" && electionId is not null && electionId != "")
         {
             message = "Saving...";
-            await _repository.PutBallotAsync(new Ballot { Id = Guid.Parse(userId), Candidates = trips });
+            await _repository.PutBallotAsync(new Ballot { Id = Guid.Parse(userId), Candidates = candidates }, electionId);
 
-            _navigationManager.NavigateTo($"{userId}", true);
+            _navigationManager.NavigateTo($"ballots?userId={userId}", true);
 
         }
     }

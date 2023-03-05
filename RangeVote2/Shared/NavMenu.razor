@@ -1,5 +1,6 @@
 ﻿@using RangeVote2.Data
 @inject RangeVoteRepository _repository
+@inject NavigationManager MyNavigationManager
 
 <div class=@(collapseNavMenu ? "collapse" : null) @onclick=ToggleNavMenu>
     <h3>Vote!</h3>
@@ -9,20 +10,45 @@
 
 </div>
 <div>
-    @if (voters > 0)
+
+    @if (userId is not null && userId != "")
     {
-        <a href="result">@voters  people have voted.</a>
+    <a href="ballots?userId=@userId">Ballots</a>
     }
+    else
+    {
+    <a href="">Ballots</a>
+    }
+    <br />
+    <br />
+    @if (voters.Count > 0)
+    {
+        <span>Voted so far:</span>
+        <hr />
+        foreach (var item in voters)
+        {
+            <span>@item.ElectionID: @item.Voters</span><br />
+        }
+    }
+
 </div>
 
 @code {
 
-    Int32 voters;
+    List<VoteCount> voters = new List<VoteCount>();
+    List<String> ballots = new List<string>();
+    String userId;
 
     protected override async Task OnInitializedAsync()
     {
         var votersCall = await _repository.GetVotersAsync();
         voters = votersCall;
+
+        ballots = _repository.GetBallots();
+
+        var uriBuilder = new UriBuilder(MyNavigationManager.Uri);
+        var q = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+        userId =  q["userId"] ?? "";
     }
 
     bool collapseNavMenu = true;
