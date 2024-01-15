@@ -19,6 +19,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th></th>
                 <th>Name</th>
                 <th style="width:200px;">Score</th>
             </tr>
@@ -31,8 +32,9 @@ else
             @foreach (var trip in candidates.OrderByDescending(t => t.Score))
             {
                 <tr>
+                    <td><img src="@trip.Image_link" height="150"></td>
                     <td><h4>@trip.Name</h4>@trip.Description</td>
-                    <td><button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name??""))">-</button> <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name??""))">-</button> @trip.ScoreString <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name??""))">+</button> <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name??""))">+</button></td>
+                    <td><button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name??""))">-</button> <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name??""))">-</button><strong>@trip.ScoreString</strong> <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name??""))">+</button> <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name??""))">+</button></td>
                 </tr>
             }
         </tbody>

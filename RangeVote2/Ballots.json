@@ -1,344 +1,495 @@
 [
-  {
-    "Name": "Alaska",
-    "Description": "Rugged mountains meet chilling sea.  Wildlife and majestic scenery are everywhere.",
-    "Score": 50,
-    "ElectionId": "Test1"
-  },
-  {
-    "Name": "Hawaii",
-    "Description": "Subtropical islands filled with sand, sea, and volcanic mountains.  Sea life and sun with a laid back vibe.",
-    "Score": 50,
-    "ElectionId": "Test1"
-  },
-  {
-    "Name": "Rocky Mountains",
-    "Description": "Tall mountains and high lakes.  Unbeatable scenery and cool fresh air.",
-    "Score": 50,
-    "ElectionId": "Test1"
-  },
-  {
-    "Name": "Alaska",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Big Basin area with local attractions",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Beach resort around Monterey",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Train trip",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Yellowstone National Park",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Kauai",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Mesa Verde National Park, Colorado - ancient cliff houses",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Banff-Lake Louise",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Vancouver Island",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Cancun",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Nuevo Vallarta",
-    "Description": "",
-    "Score": 50,
-    "ElectionId": "2019Vacation"
-  },
-  {
-    "Name": "Big Island (Hawaii)",
-    "Description": "Revisit our favorite parts of the Big Island.",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Kauai",
-    "Description": "Stay at the Hyatt, Westin, Hilton, or Outrigger resorts with nice pools. Some on the beach, some in Princeville above the beach. Activities include: Boat trip Na Pali Coastline with snorkeling or a dinner cruise, Waimea Canyon, Hanalei Bay, Trails, Waterfalls, river float, National Botanical Garden, Kilauea Lighthouse (and bird preserve), and cute towns on the beach.",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Maui",
-    "Description": "Revisit our favorite parts of Maui with optional day trip to Lanai, snorkeling, Haleakala, goat farm, beaches, etc.  We could stay at a resort with a big kid friendly pool or at one of Mom and Dad’s places.",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Glacier National Park",
-    "Description": "Stay in the Glacier Park Lodge, pristine forests, alpine meadows, rugged mountains, and spectacular lakes.  Take the train here from Portland or Seattle, fly back to from Oakland.",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Alaska Land",
-    "Description": "Fly to Anchorage or Seward and enjoy the national parks up there.  These include (pick one)  Denali, Kenai Fjords, Katmai or Kodiak",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Washington DC",
-    "Description": "Museums, Monuments, Government",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Monterey or Big Sur",
-    "Description": "Beach, Monterey Aquarium, Santa Cruz Redwoods, Roaring Camp Railroad ",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "St Johns (Caribbean Island)",
-    "Description": "National park and looks beautiful.  American Virgin Island",
-    "Score": 50,
-    "ElectionId": "2020Vacation"
-  },
-  {
-    "Name": "Denali National Park",
-    "Description": "6 million acres, one road, shuttle bus only. All visitors to Denali wishing to venture past Mile 15 into the heart of the park must ride a bus to Toklat River, Eielson Visitor Center, Wonder Lake, or Kantishna",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Katmai National Park",
-    "Description": "Fly to Kodiak Island from Anchorage by float plane to stay in all inclusive wilderness cabin.  Alternatively, we can stay on Kodiak Island exploring the island hiking, tide-pooling, history, or taking boat tours from there and staying at a local hotel. The Kodiak Wildlife Refuge.  Gray Whales seasonally feeding right offshore of 'Surfer's Beach, and there is the scenic adjacent 'Fossil Beach as well, beautiful interior mountains where you might have a chance to see bear early morning or late evening when a salmon run is not engaging bear at visible river sites. Wonderful rain forest interiors and ocean vistas (bring your binoculars). Birds and hiking trails.",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Kenai National Park",
-    "Description": "At the edge of the Kenai Peninsula lies a land where the ice age lingers. Nearly 40 glaciers flow from the Harding Icefield, Kenai Fjords' crowning feature. Wildlife thrives in icy waters and lush forests around this vast expanse of ice. Sugpiaq people relied on these resources to nurture a life entwined with the sea.  3.5 hours by train from Anchorage(great scenic train ride- includes a glacier).  In Seward, Stay in Harborside hotel with pool or Best Western hotel by the Marine Mammal Center. Town is almost walkable with shuttles around town and to Exit Glacier. Kinda like a little Lahaina with glaciers.  There are many glaciers here to hike around or on, and go on a boat tour to see tidewater glaciers. There are tons of Marine mammals including orca, humpbacks, otters, sea lions, etc. There is a Marine Center with a great display. Many day boat tours to view the park.",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Poipu (South point of island)",
-    "Description": "Poipu Beach in front has gentle waves and and clear water -- perfect for snorkeling or learning to surf.  Hyatt: top hotel with amazing pool, Kiahuna Plantation Resort OR Castle Kiahuna Plantation Beach Bungalows: Outrigger -cheaper, good pool with one water slide. The condos are large, if not luxe (no AC, unpredictable decor). Some say there is a pool, though small, has a waterslide and kiddie area. Others say no pool. Condos are spread out over grassy area.",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Princeville (North point of island)",
-    "Description": "Beautiful resort area with views and walking trails. Near Hanalei town - good spot.  Westin: top hotel with amazing pool - suites all have washers and dryers as well as kitchens with dishwashers, stovetops, and microwaves. The resort's four pools include a kids' pool. The beach, however, is a 10-minute walk down a steep path.",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Kaapa (East side of island)",
-    "Description": "Close to the airport. Narrow beach, not sure about the snorkeling, may be ok.  Waipouli Beach Resort - Outrigger: nice with good pool and waterslides",
-    "Score": 50,
-    "ElectionID": "2022Vacation"
-  },
-  {
-    "Name": "Amtrak train vacation",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Legoland + Carlsbad Cavern National park",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Kauai",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Glacier National park on our own (not Road Scholar)",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "An historic city: Boston",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Virgin Islands",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Channel Islands",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Channel Islands",
-    "Description": "",
-    "Score": 50,
-    "ElectionID": "2023Vacation"
-  },
-  {
-    "Name": "Playa de las Ánimas",
-    "Description": "A lovely remote beach, accessible by water taxi.  It has a small fishing village and some palapa (thatched-roof) restaurants offering fresh seafood.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Playa de Quimixto",
-    "Description": "This beach, just beyond Las Ánimas, has a waterfall accessible by half-hour hike or by hiring a pony on the beach to take you up.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Jardín Botánico de Vallarta (Vallarta Botanical Gardens)",
-    "Description": "Head for the tropical highlands of the Sierra Madre mountains and wander the well-curated Jardín Botánico de Vallarta (Vallarta Botanical Gardens), home to one of Mexico's most extensive orchid collections and a fascinating variety of native plants and birds.  Stroll through wooded grounds colored with bromeliads, succulents and brilliant hummingbirds, make your way down a jungle trail to the tranquil shores of Río Horcones, where you can cap off the visit with a refreshing dip in a boulder-strewn river. ",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Museo del Cuale",
-    "Description": "This tiny museum near the western end of Isla Cuale has a small collection of beautiful pottery, grinding stones, clay figurines and other ancient objects.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Fishing charter",
-    "Description": "Prime catches are sailfish, marlin, tunas ,red snapper and sea bass.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Snorkeling Charter",
-    "Description": " Snorkeling tour to the Marietas Islands, visiting the hidden beach. You also see dolphins, turtles, manta rays, and whales, while underwater you can check out a colorful array of tropical fish.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Hacienda El Divisadero",
-    "Description": "A vast ranch 90 minutes south of Puerto Vallarta offers a slew of fun activities including horseback excursions to local petroglphs, swimming in a gorgeous river and tour of  the distillery where they produce knock-your-socks-off Caicilla (a tequila-like distillation of wild agave).  The on site restaurant serves delicious meals including steaks, Mexican standards and fabulous mole pablano.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Marigalante pirate ship",
-    "Description": "A reproduction Spanish galleon that does pirate--themed daytime cruises from 9am to 4 pm",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Aquaventuras Park",
-    "Description": "Offers 10 waterslides, a lazy river swimming pool, daily dolphin shows and opportunities to play with dolphins and sea lions.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "ChocoMuseo",
-    "Description": "ChocoMuseo chocolate factory will tell you everything you ever wanted to know about Mexican cacao and chocolate. We offer workshops where you will learn how to make chocolate from Bean to Bar or truffles with ganache.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Bucerias",
-    "Description": "A charming antidote to the hustle and bustle of nearby Puerto Vallarta. You’ll meet the friendly locals and enjoy beautiful beaches, fantastic dining, outdoor activities and art galleries. Locals congregate in the small plaza in the center of town or head for the beach for some sun and unfettered mountain and bay views. Beyond the beaches of Bucerias, you’ll find superb dining, flea markets laden with special treasures, art galleries, and pubs. Once you’ve tired of the sun, meander through the flea market off the main plaza and tour the residential side of Bucerias, complete with boutique shopping and quality restaurants like La Quinta di Francesco and Adriatico. Some of the best art galleries in town include Splurge Art Gallery, showcasing emerging local artists and designer pewter. On Thursday evenings, participate in the local art walk, and on Sundays, visit the authentic Mexican market.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "A day at the hotel pool and beach",
-    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "A second day at the hotel pool and beach",
-    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "A third day at the hotel pool and beach",
-    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "A fourth day at the hotel pool and beach",
-    "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on Médano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on Médano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakActivities"
-  },
-  {
-    "Name": "Red Cabbage Cafe",
-    "Description": "Casual atmosphere with eclectic and bohemian artwork.  The food is serious and features old recipes and uncommon indigenous sauces",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  },
-  {
-    "Name": "Paris Cafe",
-    "Description": "You could easily miss this hole-in-the-wall bakery, but don't!  The flamboyant French owner bakes fabulous sweet and savory goodies, including eclairs, fruit tarts, quiches and chocolate-almond croissants.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  },
-  {
-    "Name": "Pancho's Takos",
-    "Description": "Drawing a regular nighttime crowd, this taqueria servers delicious tacos al pastor until the wee hours.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  },
-  {
-    "Name": "Cafe des Artistes",
-    "Description": "Many consider this to be Ballarta's finest restaurant.  You're sure to enjoy this romantic ambiance and exquisite fusion of French and Mexican influences.  The service is formal but unobtrusive, and reservations are recommended.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  },
-  {
-    "Name": "El Arrayan Cosina Tradicional",
-    "Description": "Owner Carmen Porras takes special pleasure in rescuing old family recipes from obscurity, with an emphasis on fresh local ingredients.  Specialties include crispy duck carnitas with orange sauce, and rib-eye steak marinated in Mexican spices and tequila.  The restaurant, with its open kitchen and romantic courtyard, also serves as a venue for monthly cooking classes.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  },
-  {
-    "Name": "Gaby's'",
-    "Description": "This bright and cheerful family-run place with upstairs seating and tree-shaded back patio has been serving dependably tasty Mexican classics; it is best at lunchtime when the daily pix-fixe menu including main dish, soup, and agua fresca cost only M$59.",
-    "Score": 50,
-    "ElectionID": "2023SpringBreakRestuarants"
-  }
+    {
+        "Description": "Rugged mountains meet chilling sea.  Wildlife and majestic scenery are everywhere.",
+        "ElectionId": "Test1",
+        "Name": "Alaska",
+        "Score": 50
+    },
+    {
+        "Description": "Subtropical islands filled with sand, sea, and volcanic mountains.  Sea life and sun with a laid back vibe.",
+        "ElectionId": "Test1",
+        "Name": "Hawaii",
+        "Score": 50
+    },
+    {
+        "Description": "Tall mountains and high lakes.  Unbeatable scenery and cool fresh air.",
+        "ElectionId": "Test1",
+        "Name": "Rocky Mountains",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Alaska",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Big Basin area with local attractions",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Beach resort around Monterey",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Train trip",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Yellowstone National Park",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Kauai",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Mesa Verde National Park, Colorado - ancient cliff houses",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Banff-Lake Louise",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Vancouver Island",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Cancun",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionId": "2019Vacation",
+        "Name": "Nuevo Vallarta",
+        "Score": 50
+    },
+    {
+        "Description": "Revisit our favorite parts of the Big Island.",
+        "ElectionId": "2020Vacation",
+        "Name": "Big Island (Hawaii)",
+        "Score": 50
+    },
+    {
+        "Description": "Stay at the Hyatt, Westin, Hilton, or Outrigger resorts with nice pools. Some on the beach, some in Princeville above the beach. Activities include: Boat trip Na Pali Coastline with snorkeling or a dinner cruise, Waimea Canyon, Hanalei Bay, Trails, Waterfalls, river float, National Botanical Garden, Kilauea Lighthouse (and bird preserve), and cute towns on the beach.",
+        "ElectionId": "2020Vacation",
+        "Name": "Kauai",
+        "Score": 50
+    },
+    {
+        "Description": "Revisit our favorite parts of Maui with optional day trip to Lanai, snorkeling, Haleakala, goat farm, beaches, etc.  We could stay at a resort with a big kid friendly pool or at one of Mom and Dad\u2019s places.",
+        "ElectionId": "2020Vacation",
+        "Name": "Maui",
+        "Score": 50
+    },
+    {
+        "Description": "Stay in the Glacier Park Lodge, pristine forests, alpine meadows, rugged mountains, and spectacular lakes.  Take the train here from Portland or Seattle, fly back to from Oakland.",
+        "ElectionId": "2020Vacation",
+        "Name": "Glacier National Park",
+        "Score": 50
+    },
+    {
+        "Description": "Fly to Anchorage or Seward and enjoy the national parks up there.  These include (pick one)  Denali, Kenai Fjords, Katmai or Kodiak",
+        "ElectionId": "2020Vacation",
+        "Name": "Alaska Land",
+        "Score": 50
+    },
+    {
+        "Description": "Museums, Monuments, Government",
+        "ElectionId": "2020Vacation",
+        "Name": "Washington DC",
+        "Score": 50
+    },
+    {
+        "Description": "Beach, Monterey Aquarium, Santa Cruz Redwoods, Roaring Camp Railroad ",
+        "ElectionId": "2020Vacation",
+        "Name": "Monterey or Big Sur",
+        "Score": 50
+    },
+    {
+        "Description": "National park and looks beautiful.  American Virgin Island",
+        "ElectionId": "2020Vacation",
+        "Name": "St Johns (Caribbean Island)",
+        "Score": 50
+    },
+    {
+        "Description": "6 million acres, one road, shuttle bus only. All visitors to Denali wishing to venture past Mile 15 into the heart of the park must ride a bus to Toklat River, Eielson Visitor Center, Wonder Lake, or Kantishna",
+        "ElectionID": "2022Vacation",
+        "Name": "Denali National Park",
+        "Score": 50
+    },
+    {
+        "Description": "Fly to Kodiak Island from Anchorage by float plane to stay in all inclusive wilderness cabin.  Alternatively, we can stay on Kodiak Island exploring the island hiking, tide-pooling, history, or taking boat tours from there and staying at a local hotel. The Kodiak Wildlife Refuge.  Gray Whales seasonally feeding right offshore of 'Surfer's Beach, and there is the scenic adjacent 'Fossil Beach as well, beautiful interior mountains where you might have a chance to see bear early morning or late evening when a salmon run is not engaging bear at visible river sites. Wonderful rain forest interiors and ocean vistas (bring your binoculars). Birds and hiking trails.",
+        "ElectionID": "2022Vacation",
+        "Name": "Katmai National Park",
+        "Score": 50
+    },
+    {
+        "Description": "At the edge of the Kenai Peninsula lies a land where the ice age lingers. Nearly 40 glaciers flow from the Harding Icefield, Kenai Fjords' crowning feature. Wildlife thrives in icy waters and lush forests around this vast expanse of ice. Sugpiaq people relied on these resources to nurture a life entwined with the sea.  3.5 hours by train from Anchorage(great scenic train ride- includes a glacier).  In Seward, Stay in Harborside hotel with pool or Best Western hotel by the Marine Mammal Center. Town is almost walkable with shuttles around town and to Exit Glacier. Kinda like a little Lahaina with glaciers.  There are many glaciers here to hike around or on, and go on a boat tour to see tidewater glaciers. There are tons of Marine mammals including orca, humpbacks, otters, sea lions, etc. There is a Marine Center with a great display. Many day boat tours to view the park.",
+        "ElectionID": "2022Vacation",
+        "Name": "Kenai National Park",
+        "Score": 50
+    },
+    {
+        "Description": "Poipu Beach in front has gentle waves and and clear water -- perfect for snorkeling or learning to surf.  Hyatt: top hotel with amazing pool, Kiahuna Plantation Resort OR Castle Kiahuna Plantation Beach Bungalows: Outrigger -cheaper, good pool with one water slide. The condos are large, if not luxe (no AC, unpredictable decor). Some say there is a pool, though small, has a waterslide and kiddie area. Others say no pool. Condos are spread out over grassy area.",
+        "ElectionID": "2022Vacation",
+        "Name": "Poipu (South point of island)",
+        "Score": 50
+    },
+    {
+        "Description": "Beautiful resort area with views and walking trails. Near Hanalei town - good spot.  Westin: top hotel with amazing pool - suites all have washers and dryers as well as kitchens with dishwashers, stovetops, and microwaves. The resort's four pools include a kids' pool. The beach, however, is a 10-minute walk down a steep path.",
+        "ElectionID": "2022Vacation",
+        "Name": "Princeville (North point of island)",
+        "Score": 50
+    },
+    {
+        "Description": "Close to the airport. Narrow beach, not sure about the snorkeling, may be ok.  Waipouli Beach Resort - Outrigger: nice with good pool and waterslides",
+        "ElectionID": "2022Vacation",
+        "Name": "Kaapa (East side of island)",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Amtrak train vacation",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Legoland + Carlsbad Cavern National park",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Kauai",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Glacier National park on our own (not Road Scholar)",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "An historic city: Boston",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Virgin Islands",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Channel Islands",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "2023Vacation",
+        "Name": "Channel Islands",
+        "Score": 50
+    },
+    {
+        "Description": "A lovely remote beach, accessible by water taxi.  It has a small fishing village and some palapa (thatched-roof) restaurants offering fresh seafood.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Playa de las \u00c1nimas",
+        "Score": 50
+    },
+    {
+        "Description": "This beach, just beyond Las \u00c1nimas, has a waterfall accessible by half-hour hike or by hiring a pony on the beach to take you up.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Playa de Quimixto",
+        "Score": 50
+    },
+    {
+        "Description": "Head for the tropical highlands of the Sierra Madre mountains and wander the well-curated Jard\u00edn Bot\u00e1nico de Vallarta (Vallarta Botanical Gardens), home to one of Mexico's most extensive orchid collections and a fascinating variety of native plants and birds.  Stroll through wooded grounds colored with bromeliads, succulents and brilliant hummingbirds, make your way down a jungle trail to the tranquil shores of R\u00edo Horcones, where you can cap off the visit with a refreshing dip in a boulder-strewn river. ",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Jard\u00edn Bot\u00e1nico de Vallarta (Vallarta Botanical Gardens)",
+        "Score": 50
+    },
+    {
+        "Description": "This tiny museum near the western end of Isla Cuale has a small collection of beautiful pottery, grinding stones, clay figurines and other ancient objects.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Museo del Cuale",
+        "Score": 50
+    },
+    {
+        "Description": "Prime catches are sailfish, marlin, tunas ,red snapper and sea bass.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Fishing charter",
+        "Score": 50
+    },
+    {
+        "Description": " Snorkeling tour to the Marietas Islands, visiting the hidden beach. You also see dolphins, turtles, manta rays, and whales, while underwater you can check out a colorful array of tropical fish.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Snorkeling Charter",
+        "Score": 50
+    },
+    {
+        "Description": "A vast ranch 90 minutes south of Puerto Vallarta offers a slew of fun activities including horseback excursions to local petroglphs, swimming in a gorgeous river and tour of  the distillery where they produce knock-your-socks-off Caicilla (a tequila-like distillation of wild agave).  The on site restaurant serves delicious meals including steaks, Mexican standards and fabulous mole pablano.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Hacienda El Divisadero",
+        "Score": 50
+    },
+    {
+        "Description": "A reproduction Spanish galleon that does pirate--themed daytime cruises from 9am to 4 pm",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Marigalante pirate ship",
+        "Score": 50
+    },
+    {
+        "Description": "Offers 10 waterslides, a lazy river swimming pool, daily dolphin shows and opportunities to play with dolphins and sea lions.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Aquaventuras Park",
+        "Score": 50
+    },
+    {
+        "Description": "ChocoMuseo chocolate factory will tell you everything you ever wanted to know about Mexican cacao and chocolate. We offer workshops where you will learn how to make chocolate from Bean to Bar or truffles with ganache.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "ChocoMuseo",
+        "Score": 50
+    },
+    {
+        "Description": "A charming antidote to the hustle and bustle of nearby Puerto Vallarta. You\u2019ll meet the friendly locals and enjoy beautiful beaches, fantastic dining, outdoor activities and art galleries. Locals congregate in the small plaza in the center of town or head for the beach for some sun and unfettered mountain and bay views. Beyond the beaches of Bucerias, you\u2019ll find superb dining, flea markets laden with special treasures, art galleries, and pubs. Once you\u2019ve tired of the sun, meander through the flea market off the main plaza and tour the residential side of Bucerias, complete with boutique shopping and quality restaurants like La Quinta di Francesco and Adriatico. Some of the best art galleries in town include Splurge Art Gallery, showcasing emerging local artists and designer pewter. On Thursday evenings, participate in the local art walk, and on Sundays, visit the authentic Mexican market.",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "Bucerias",
+        "Score": 50
+    },
+    {
+        "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on M\u00e9dano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on M\u00e9dano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "A day at the hotel pool and beach",
+        "Score": 50
+    },
+    {
+        "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on M\u00e9dano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on M\u00e9dano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "A second day at the hotel pool and beach",
+        "Score": 50
+    },
+    {
+        "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on M\u00e9dano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on M\u00e9dano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "A third day at the hotel pool and beach",
+        "Score": 50
+    },
+    {
+        "Description": "Villa La Estancia Beach Resort & Spa, Los Cabos. Known for its refined elegance, sophisticated style and relaxing atmosphere right on M\u00e9dano Beach, this resort creates an experience to relish. The pampering begins the moment you enter the lobby of the luxurious Villa La Estancia. Located on M\u00e9dano Beach, this five-star retreat prides itself on offering magnificence amidst a relaxed setting. Free parking, Free internet, Pool, Fitness Center with Gym, Bar, Beach, Snorkeling, Babysitting",
+        "ElectionID": "2023SpringBreakActivities",
+        "Name": "A fourth day at the hotel pool and beach",
+        "Score": 50
+    },
+    {
+        "Description": "Casual atmosphere with eclectic and bohemian artwork.  The food is serious and features old recipes and uncommon indigenous sauces",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "Red Cabbage Cafe",
+        "Score": 50
+    },
+    {
+        "Description": "You could easily miss this hole-in-the-wall bakery, but don't!  The flamboyant French owner bakes fabulous sweet and savory goodies, including eclairs, fruit tarts, quiches and chocolate-almond croissants.",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "Paris Cafe",
+        "Score": 50
+    },
+    {
+        "Description": "Drawing a regular nighttime crowd, this taqueria servers delicious tacos al pastor until the wee hours.",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "Pancho's Takos",
+        "Score": 50
+    },
+    {
+        "Description": "Many consider this to be Ballarta's finest restaurant.  You're sure to enjoy this romantic ambiance and exquisite fusion of French and Mexican influences.  The service is formal but unobtrusive, and reservations are recommended.",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "Cafe des Artistes",
+        "Score": 50
+    },
+    {
+        "Description": "Owner Carmen Porras takes special pleasure in rescuing old family recipes from obscurity, with an emphasis on fresh local ingredients.  Specialties include crispy duck carnitas with orange sauce, and rib-eye steak marinated in Mexican spices and tequila.  The restaurant, with its open kitchen and romantic courtyard, also serves as a venue for monthly cooking classes.",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "El Arrayan Cosina Tradicional",
+        "Score": 50
+    },
+    {
+        "Description": "This bright and cheerful family-run place with upstairs seating and tree-shaded back patio has been serving dependably tasty Mexican classics; it is best at lunchtime when the daily pix-fixe menu including main dish, soup, and agua fresca cost only M$59.",
+        "ElectionID": "2023SpringBreakRestuarants",
+        "Name": "Gaby's'",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "PE",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "HORT",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Masters",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Camping Hitch",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "E-Briquettes",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "ee marketplace",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Bakery",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Brewery",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Public Speaker",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Electrician",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Battery maker",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Same Same",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Podcater",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Commedian",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Writer",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Priest",
+        "Score": 50
+    },
+    {
+        "Description": "",
+        "ElectionID": "TREskills",
+        "Name": "Home developer",
+        "Score": 50
+    },
+    {
+        "Description": "Revisit our favorite parts of the Big Island.",
+        "ElectionId": "2024Vacation",
+        "Name": "Big Island (Hawaii)",
+        "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Island_of_Hawai%27i_-_Landsat_mosaic.jpg/260px-Island_of_Hawai%27i_-_Landsat_mosaic.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Revisit our favorite parts of the Redwood National Park.",
+        "ElectionId": "2024Vacation",
+        "Name": "North Coast Redwoods",
+        "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Redwood_National_Park%2C_fog_in_the_forest.jpg/284px-Redwood_National_Park%2C_fog_in_the_forest.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "7-Day Canada & New England Discovery.",
+        "ElectionId": "2024Vacation",
+        "Name": "New England Cruise",
+        "Image_link": "https://www.hollandamerica.com/content/dam/hal65/inventory-assets/itineraries/N/cruise-detail-canada-new-england-bar-harbor-acadia-maine.jpg.image.0.0.low.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "7-Day Baja Peninsula & Sea Of Cortez (winter and spring dates, may not work out).",
+        "ElectionId": "2024Vacation",
+        "Name": "Mexico Cruise",
+        "Image_link": "https://www.hollandamerica.com/content/dam/hal/inventory-assets/itineraries/N8N14E/test/cruise-detail-overview--mexico--los-arcos-sunset--13-10-17--large--c022.jpg.image.0.0.low.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "7-Day Glacier Discovery Northbound, Vancouver to Whittier AK or 7-Day Alaska Inside Passage.",
+        "ElectionId": "2024Vacation",
+        "Name": "Alaska Cruise",
+        "Image_link": "https://www.hollandamerica.com/content/dam/hal/inventory-assets/itineraries/A9N07A/7-day-glacier-discovery-northbound-c022.jpg.image.0.0.low.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Victoria & surrounding Vancouver Island.",
+        "ElectionId": "2024Vacation",
+        "Name": "Victoria (West Canada)",
+        "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/The_Fairmont_Empress%2C_blue_hour.jpg/220px-The_Fairmont_Empress%2C_blue_hour.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Baffin Island & Auyuittuq National Park.",
+        "ElectionId": "2024Vacation",
+        "Name": "Baffin Island (North Canada)",
+        "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Pangnirtung_Fiord_S_2_2001-07-15.jpg/284px-Pangnirtung_Fiord_S_2_2001-07-15.jpg",
+        "Score": 50
+    }
 ]

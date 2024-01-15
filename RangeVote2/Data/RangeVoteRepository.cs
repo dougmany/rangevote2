@@ -43,7 +43,8 @@ namespace RangeVote2.Data
                     Name = c.Name,
                     Score = c.Score,
                     ElectionID = c.ElectionID,
-                    Description = c.Description
+                    Description = c.Description,
+                    Image_link = c.Image_link
                 }).ToArray()
             };
             if (ballot.Candidates.Length > 0)
@@ -81,10 +82,11 @@ namespace RangeVote2.Data
                     Name = c.Name,
                     Score = c.Score,
                     ElectionID = c.ElectionID,
-                    Description = c.Description
+                    Description = c.Description,
+                    Image_link = c.Image_link
                 });
 
-                String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description) Values (@Guid, @Name, @Score, @ElectionID, @Description)";
+                String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description, Image_link) Values (@Guid, @Name, @Score, @ElectionID, @Description, @Image_link)";
                 await connection.ExecuteAsync(query, data);
             }
         }

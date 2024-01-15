@@ -13,6 +13,7 @@
         public String? ElectionID { get; set; }
         public String? Description { get; set; }
         public String? ScoreString { get { return (Score / 10.0).ToString("N1"); } }
+        public String Image_link { get; set; }
     }
 
     public class DBCandidate
@@ -22,5 +23,6 @@
         public Int32 Score { get; set; }
         public String? ElectionID { get; set; }
         public String? Description { get; set; }
+        public String Image_link { get; set; }
     }
 }
