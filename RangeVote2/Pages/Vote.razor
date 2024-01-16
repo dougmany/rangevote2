@@ -21,7 +21,7 @@ else
             <tr>
                 <th></th>
                 <th>Name</th>
-                <th style="width:200px;">Score</th>
+                <th style="width:200px;text-align:center;">Score</th>
             </tr>
         </thead>
         <tfoot>
@@ -34,7 +34,24 @@ else
                 <tr>
                     <td><img src="@trip.Image_link" height="150"></td>
                     <td><h4>@trip.Name</h4>@trip.Description</td>
-                    <td><button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name??""))">-</button> <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name??""))">-</button><strong>@trip.ScoreString</strong> <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name??""))">+</button> <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name??""))">+</button></td>
+                    <td style="text-align:center;">
+                        <div>
+                            <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name??""))">+</button>
+                        </div>
+                        <div>
+                            <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name??""))">+</button>
+                        </div>
+                        <div>
+                            <strong>@trip.ScoreString</strong>
+                        </div>
+                        <div>
+                            <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name??""))">-</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name??""))">-</button>
+                        </div>
+
+                    </td>
                 </tr>
             }
         </tbody>
@@ -46,7 +63,7 @@ else
     [SupplyParameterFromQuery]
     public String? userId { get; set; }
     [Parameter]
-    [SupplyParameterFromQuery] 
+    [SupplyParameterFromQuery]
     public String? electionId { get; set; }
     Candidate[]? candidates;
     String? message;
