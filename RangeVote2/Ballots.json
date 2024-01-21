@@ -445,51 +445,58 @@
     },
     {
         "Description": "Revisit our favorite parts of the Big Island.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "Big Island (Hawaii)",
         "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Island_of_Hawai%27i_-_Landsat_mosaic.jpg/260px-Island_of_Hawai%27i_-_Landsat_mosaic.jpg",
         "Score": 50
     },
     {
         "Description": "Revisit our favorite parts of the Redwood National Park.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "North Coast Redwoods",
         "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Redwood_National_Park%2C_fog_in_the_forest.jpg/284px-Redwood_National_Park%2C_fog_in_the_forest.jpg",
         "Score": 50
     },
     {
         "Description": "7-Day Canada & New England Discovery.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "New England Cruise",
         "Image_link": "https://www.hollandamerica.com/content/dam/hal65/inventory-assets/itineraries/N/cruise-detail-canada-new-england-bar-harbor-acadia-maine.jpg.image.0.0.low.jpg",
         "Score": 50
     },
     {
         "Description": "7-Day Baja Peninsula & Sea Of Cortez (winter and spring dates, may not work out).",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "Mexico Cruise",
         "Image_link": "https://www.hollandamerica.com/content/dam/hal/inventory-assets/itineraries/N8N14E/test/cruise-detail-overview--mexico--los-arcos-sunset--13-10-17--large--c022.jpg.image.0.0.low.jpg",
         "Score": 50
     },
     {
         "Description": "7-Day Glacier Discovery Northbound, Vancouver to Whittier AK or 7-Day Alaska Inside Passage.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "Alaska Cruise",
         "Image_link": "https://www.hollandamerica.com/content/dam/hal/inventory-assets/itineraries/A9N07A/7-day-glacier-discovery-northbound-c022.jpg.image.0.0.low.jpg",
         "Score": 50
     },
     {
         "Description": "Victoria & surrounding Vancouver Island.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "Victoria (West Canada)",
         "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/The_Fairmont_Empress%2C_blue_hour.jpg/220px-The_Fairmont_Empress%2C_blue_hour.jpg",
         "Score": 50
     },
     {
         "Description": "Baffin Island & Auyuittuq National Park.",
-        "ElectionId": "2024Vacation",
+        "ElectionId": "2024_Vacation",
         "Name": "Baffin Island (North Canada)",
         "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Pangnirtung_Fiord_S_2_2001-07-15.jpg/284px-Pangnirtung_Fiord_S_2_2001-07-15.jpg",
         "Score": 50
-    }
+    },
+  {
+    "Description": "Banff National Park and Lake Louise located in Alberta's Rocky Mountains, North of Montana",
+    "ElectionId": "2024_Vacation",
+    "Name": "Banff National Park and Lake Louise.",
+    "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Moraine_Lake_17092005.jpg/284px-Moraine_Lake_17092005.jpg",
+    "Score": 50
+  }
 ]
