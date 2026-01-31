@@ -1,153 +1,296 @@
-﻿@page "/vote"
+@page "/vote"
+@attribute [Authorize]
 
-<PageTitle>@electionId</PageTitle>
+<PageTitle>@decisionName - Graze - HerdVote</PageTitle>
 
 @using RangeVote2.Data
-@inject RangeVoteRepository _repository
-@inject NavigationManager _navigationManager
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
-@if (candidates == null)
+@if (isLoading)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Loading the pasture...</em></p>
 }
-else
+else if (errorMessage != null)
 {
-    <h1>Trip Vote</h1>
+    <div class="alert alert-danger">@errorMessage</div>
+    <a href="/decisions" class="btn btn-secondary">Back to Pastures</a>
+}
+else if (choices.Any())
+{
+    <div class="mb-4">
+        <h1>🌾 @decisionName</h1>
 
-    <p>Rows will <strong>sort themselves</strong> as you click.</p>
+        @if (!string.IsNullOrWhiteSpace(decisionDescription))
+        {
+            <p class="text-muted">@decisionDescription</p>
+        }
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th style="width:200px;text-align:center;">Score</th>
-            </tr>
-        </thead>
-        <tfoot>
-            @message
-            <button class="btn btn-primary" @onclick="SaveScores">Save</button>
-        </tfoot>
-        <tbody>
-            @foreach (var trip in candidates.OrderByDescending(t => t.Score))
-            {
-                <tr>
-                    <td><img src="@trip.Image_link" height="150"></td>
-                    <td><h4>@trip.Name</h4>@trip.Description</td>
-                    <td style="text-align:center;">
-                        <div>
-                            <button class="btn btn-primary" @onclick="@(() => IncrementScore(@trip.Name??""))">+</button>
-                        </div>
-                        <div>
-                            <button class="btn" @onclick="@(() => IncrementScorePt(@trip.Name??""))">+</button>
-                        </div>
-                        <div>
-                            <strong>@trip.ScoreString</strong>
-                        </div>
-                        <div>
-                            <button class="btn" @onclick="@(() => DecrementScorePt(@trip.Name??""))">-</button>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary" @onclick="@(() => DecrementScore(@trip.Name??""))">-</button>
-                        </div>
+        @if (isClosed)
+        {
+            <div class="alert alert-warning">This pasture is fenced off. No more grazing allowed!</div>
+        }
+        else if (closeDate.HasValue)
+        {
+            <div class="alert alert-info">Grazing closes on @closeDate.Value.ToString("MMMM dd, yyyy") - munch while you can!</div>
+        }
+    </div>
 
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p class="text-muted mb-4">Rate each patch of grass. Tastier patches get higher scores! The patches will sort themselves as you graze.</p>
+
+    <div class="row">
+        @foreach (var choice in choices.OrderByDescending(t => t.Score))
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="vote-card">
+                    @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
+                    {
+                        <img src="@choice.ImageLink" alt="@choice.Name" class="vote-card-image" />
+                    }
+                    <div class="vote-card-body">
+                        <h4 class="vote-card-title">@choice.Name</h4>
+                        @if (!string.IsNullOrWhiteSpace(choice.Description))
+                        {
+                            <p class="vote-card-description">@choice.Description</p>
+                        }
+                    </div>
+                    <div class="vote-controls">
+                        @if (!isClosed)
+                        {
+                            <button class="vote-btn vote-btn-down" @onclick="@(() => DecrementScore(choice.Id, 10))" title="Much less tasty!">
+                                <span>−−</span>
+                            </button>
+                            <button class="vote-btn vote-btn-down-small" @onclick="@(() => DecrementScore(choice.Id, 1))" title="Slightly less tasty">
+                                <span>−</span>
+                            </button>
+                        }
+                        <div class="vote-score">
+                            <span class="vote-score-value">@((choice.Score / 10.0).ToString("N1"))</span>
+                        </div>
+                        @if (!isClosed)
+                        {
+                            <button class="vote-btn vote-btn-up-small" @onclick="@(() => IncrementScore(choice.Id, 1))" title="Slightly tastier">
+                                <span>+</span>
+                            </button>
+                            <button class="vote-btn vote-btn-up" @onclick="@(() => IncrementScore(choice.Id, 10))" title="Much tastier!">
+                                <span>++</span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (message != null)
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+
+    @if (!isClosed)
+    {
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary btn-lg" @onclick="SaveScores" disabled="@isSaving">
+                @if (isSaving)
+                {
+                    <span>Chewing...</span>
+                }
+                else
+                {
+                    <span>Save My Grazing 🐄</span>
+                }
+            </button>
+            <a href="/decisions" class="btn btn-secondary btn-lg">Back to Pastures</a>
+        </div>
+    }
+    else
+    {
+        <div class="mt-4">
+            <a href="/result?ballotId=@currentDecisionId" class="btn btn-primary">See The Digest 💩</a>
+            <a href="/decisions" class="btn btn-secondary">Back to Pastures</a>
+        </div>
+    }
 }
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public String? userId { get; set; }
+    public Guid? ballotId { get; set; }
+
+    // Legacy support
     [Parameter]
     [SupplyParameterFromQuery]
     public String? electionId { get; set; }
-    Candidate[]? candidates;
+
+    private class VoteChoice
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public string? ImageLink { get; set; }
+        public int Score { get; set; }
+    }
+
+    private List<VoteChoice> choices = new();
+    Candidate[]? candidates; // For legacy
     String? message;
+    String? errorMessage;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool isClosed = false;
+    private DateTime? closeDate;
+    private string decisionName = "Graze";
+    private string? decisionDescription;
+    private Guid userId;
+    private Guid currentDecisionId;
 
     protected override async Task OnInitializedAsync()
     {
-        if (userId is not null && userId is not "" && electionId is not null && electionId is not "")
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
         {
-            var ballot = await _repository.GetBallotAsync(Guid.Parse(userId), electionId);
-            candidates = ballot.Candidates;
-        }
-    }
-    void IncrementScore(String name)
-    {
-        if (candidates is not null)
-        {
-            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
-            if (trip != null)
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
             {
-                if (trip.Score < 90)
-                {
-                    trip.Score += 10;
-                }
+                userId = Guid.Parse(userIdClaim.Value);
             }
         }
-    }
 
-    void IncrementScorePt(String name)
-    {
-
-        if (candidates != null)
+        try
         {
-            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
-
-            if (trip is not null && trip.Score < 99)
+            // New decision system
+            if (ballotId.HasValue)
             {
-                trip.Score++;
+                currentDecisionId = ballotId.Value;
+                await LoadDecision();
+            }
+            // Legacy system
+            else if (!string.IsNullOrWhiteSpace(electionId))
+            {
+                await LoadLegacyBallot();
+            }
+            else
+            {
+                errorMessage = "No pasture specified. Where should we graze?";
             }
         }
-    }
-
-    void DecrementScore(String name)
-    {
-        if (candidates != null)
+        catch (Exception ex)
         {
-            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
-            if (trip != null)
-            {
-                if (trip.Score > 10)
-                {
-                    trip.Score -= 10;
-                }
-                else if (trip.Score <= 10)
-                {
-                    trip.Score = 0;
-                }
-            }
+            errorMessage = $"Error loading pasture: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
-    void DecrementScorePt(String name)
+    private async Task LoadDecision()
     {
-        if (candidates != null)
+        // Get decision metadata
+        var decision = await Repository.GetBallotMetadataAsync(currentDecisionId);
+        if (decision == null)
         {
-            var trip = candidates.Where(t => t.Name == name).FirstOrDefault();
-            if (trip != null)
+            errorMessage = "Pasture not found. Maybe the cows ate it all?";
+            return;
+        }
+
+        // Check permissions
+        var canVote = await Repository.CanUserVoteAsync(currentDecisionId, userId);
+        if (!canVote)
+        {
+            errorMessage = "You're not allowed to graze on this pasture. Mooo-ve along!";
+            return;
+        }
+
+        decisionName = decision.Name;
+        decisionDescription = decision.Description;
+        isClosed = decision.Status == BallotStatus.Closed;
+        closeDate = decision.CloseDate;
+
+        // Get choices
+        var decisionChoices = await Repository.GetCandidatesAsync(currentDecisionId);
+
+        // Get existing votes
+        var existingVotes = await Repository.GetUserVotesAsync(currentDecisionId, userId);
+
+        // Build choice list with scores
+        foreach (var choice in decisionChoices)
+        {
+            var existingVote = existingVotes.FirstOrDefault(v => v.CandidateId == choice.Id);
+            choices.Add(new VoteChoice
             {
-                if (trip.Score > 0)
-                {
-                    trip.Score--;
-                }
-            }
+                Id = choice.Id,
+                Name = choice.Name,
+                Description = choice.Description,
+                ImageLink = choice.ImageLink,
+                Score = existingVote?.Score ?? 50 // Default to 50 (5.0)
+            });
+        }
+    }
+
+    private async Task LoadLegacyBallot()
+    {
+        if (electionId == null) return;
+
+        decisionName = electionId;
+        var ballot = await Repository.GetBallotAsync(userId, electionId);
+        candidates = ballot.Candidates;
+    }
+
+    void IncrementScore(Guid choiceId, int amount)
+    {
+        var choice = choices.FirstOrDefault(c => c.Id == choiceId);
+        if (choice != null && choice.Score < 99)
+        {
+            choice.Score = Math.Min(99, choice.Score + amount);
+        }
+    }
+
+    void DecrementScore(Guid choiceId, int amount)
+    {
+        var choice = choices.FirstOrDefault(c => c.Id == choiceId);
+        if (choice != null && choice.Score > 0)
+        {
+            choice.Score = Math.Max(0, choice.Score - amount);
         }
     }
 
     async Task SaveScores()
     {
-        if (userId is not null && userId != "" && electionId is not null && electionId != "")
+        if (isClosed)
         {
-            message = "Saving...";
-            await _repository.PutBallotAsync(new Ballot { Id = Guid.Parse(userId), Candidates = candidates }, electionId);
+            message = "This pasture is fenced off!";
+            return;
+        }
 
-            _navigationManager.NavigateTo($"ballots?userId={userId}", true);
+        try
+        {
+            isSaving = true;
+            message = "Chewing on it...";
 
+            // New decision system
+            if (ballotId.HasValue)
+            {
+                var scores = choices.ToDictionary(c => c.Id, c => c.Score);
+                await Repository.SaveVotesAsync(currentDecisionId, userId, scores);
+                NavigationManager.NavigateTo("/decisions");
+            }
+            // Legacy system
+            else if (!string.IsNullOrWhiteSpace(electionId) && candidates != null)
+            {
+                await Repository.PutBallotAsync(new Ballot { Id = userId, Candidates = candidates }, electionId);
+                NavigationManager.NavigateTo("/decisions");
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error saving: {ex.Message}";
+            isSaving = false;
         }
     }
 }

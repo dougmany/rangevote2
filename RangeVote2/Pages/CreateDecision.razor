@@ -1,0 +1,199 @@
+@page "/decision/create"
+@page "/ballot/create"
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>Plant a Pasture - HerdVote</PageTitle>
+
+<h1>🌱 Plant a New Pasture</h1>
+<p class="text-muted">Set up some patches of grass for your herd to graze on.</p>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <div class="form-group">
+                <label>Pasture Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" placeholder="e.g., Where should we go for lunch?" />
+            </div>
+
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <InputTextArea class="form-control" @bind-Value="model.Description" rows="2" placeholder="What is the herd deciding on?" />
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Herd</label>
+                        <select class="form-control" @bind="model.OrganizationId">
+                            <option value="">Solo Grazing (just me)</option>
+                            @foreach (var org in organizations)
+                            {
+                                <option value="@org.Key">@org.Value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Fence Up Date (optional)</label>
+                        <InputDate class="form-control" @bind-Value="model.CloseDate" />
+                        <small class="form-text">When should the pasture be fenced off?</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" id="isPublicCheck" />
+                <label class="form-check-label" for="isPublicCheck">
+                    Open this pasture to the open range
+                </label>
+                <div class="form-text">Public pastures can be discovered and joined by any cow roaming the range.</div>
+            </div>
+
+            <hr />
+
+            <h3>🌾 Patches of Grass</h3>
+            <p class="text-muted">Add the options for the herd to graze on (minimum 2 patches).</p>
+
+            @for (int i = 0; i < model.Candidates.Count; i++)
+            {
+                var index = i;
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong>Patch @(index + 1)</strong>
+                            @if (model.Candidates.Count > 2)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RemoveChoice(index)">Remove</button>
+                            }
+                        </div>
+                        <div class="form-group">
+                            <label>Name</label>
+                            <InputText class="form-control" @bind-Value="model.Candidates[index].Name" placeholder="e.g., Italian restaurant" />
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Description (optional)</label>
+                            <InputText class="form-control" @bind-Value="model.Candidates[index].Description" placeholder="What makes this patch special?" />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <button type="button" class="btn btn-secondary mb-4" @onclick="AddChoice">+ Add Another Patch</button>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span>Planting...</span>
+                    }
+                    else
+                    {
+                        <span>Plant the Pasture 🌾</span>
+                    }
+                </button>
+                <a href="/decisions" class="btn btn-secondary">Cancel</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private CreateBallotModel model = new CreateBallotModel();
+    private Dictionary<string, string> organizations = new Dictionary<string, string>();
+    private string? errorMessage;
+    private bool isSaving = false;
+    private Guid userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+
+                var orgIds = await Repository.GetUserOrganizationsAsync(userId);
+                foreach (var orgId in orgIds)
+                {
+                    var org = await Repository.GetOrganizationAsync(orgId);
+                    if (org != null)
+                    {
+                        organizations[orgId.ToString()] = org.Name;
+                    }
+                }
+            }
+        }
+
+        model.Candidates.Add(new CreateCandidateModel());
+        model.Candidates.Add(new CreateCandidateModel());
+    }
+
+    private void AddChoice()
+    {
+        model.Candidates.Add(new CreateCandidateModel());
+    }
+
+    private void RemoveChoice(int index)
+    {
+        if (model.Candidates.Count > 2)
+        {
+            model.Candidates.RemoveAt(index);
+        }
+        else
+        {
+            errorMessage = "You need at least 2 patches for the herd to graze on!";
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            errorMessage = "Every pasture needs a name!";
+            return;
+        }
+
+        model.Candidates = model.Candidates.Where(c => !string.IsNullOrWhiteSpace(c.Name)).ToList();
+
+        if (model.Candidates.Count < 2)
+        {
+            errorMessage = "You need at least 2 patches with names for the herd to graze on!";
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+
+            if (string.IsNullOrWhiteSpace(model.OrganizationId?.ToString()))
+            {
+                model.OrganizationId = null;
+            }
+
+            await Repository.CreateBallotAsync(model, userId);
+            NavigationManager.NavigateTo("/decisions");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error planting pasture: {ex.Message}";
+            isSaving = false;
+        }
+    }
+}

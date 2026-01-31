@@ -1,0 +1,278 @@
+@page "/discover"
+@page "/marketplace"
+@attribute [Authorize]
+
+<PageTitle>The Open Range - HerdVote</PageTitle>
+
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<h1>🏔️ The Open Range</h1>
+<p class="text-muted mb-4">Find public pastures to graze on. Once you join, they'll appear in your "My Pastures" list.</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" class="form-control" placeholder="Search pastures..."
+                       @bind="searchTerm" @bind:event="oninput" @onkeyup="HandleSearch" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Herd</label>
+                <select class="form-control" @bind="selectedOrganizationId" @bind:after="ApplyFilters">
+                    <option value="">All Herds</option>
+                    @foreach (var org in organizations)
+                    {
+                        <option value="@org.Id">@org.Name (@org.BallotCount)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Fencing Soon</label>
+                <select class="form-control" @bind="closingSoonFilter" @bind:after="ApplyFilters">
+                    <option value="">All Pastures</option>
+                    <option value="true">Fencing Soon (7 days)</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Scouting the range...</em></p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (successMessage != null)
+{
+    <div class="alert alert-success alert-dismissible">
+        @successMessage
+        <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+    </div>
+}
+
+@if (!decisions.Any() && !isLoading)
+{
+    <div class="empty-state">
+        <div class="empty-state-icon">🌵</div>
+        <h3>No Pastures Found</h3>
+        @if (!string.IsNullOrWhiteSpace(searchTerm) || selectedOrganizationId.HasValue || closingSoonFilter == "true")
+        {
+            <p>Try adjusting your search or filters. The range is big!</p>
+        }
+        else
+        {
+            <p>The open range is empty right now. Check back later or plant your own pasture!</p>
+        }
+        <a href="/decision/create" class="btn btn-primary mt-2">Plant a Pasture 🌾</a>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var decision in decisions)
+        {
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @decision.Name
+                            @if (decision.IsClosingSoon)
+                            {
+                                <span class="badge bg-warning text-dark">Fencing Soon!</span>
+                            }
+                        </h5>
+                        @if (!string.IsNullOrWhiteSpace(decision.Description))
+                        {
+                            <p class="card-text text-muted">@TruncateDescription(decision.Description)</p>
+                        }
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                @decision.CandidateCount patches
+                                @if (decision.VoteCount > 0)
+                                {
+                                    <span> · @decision.VoteCount grazes</span>
+                                }
+                            </small>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(decision.OrganizationName))
+                        {
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">@decision.OrganizationName herd</span>
+                            </div>
+                        }
+                        @if (decision.CloseDate.HasValue)
+                        {
+                            <small class="text-muted d-block">
+                                Fences up @decision.CloseDate.Value.ToString("MMM dd, yyyy")
+                            </small>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <button class="btn btn-success w-100" @onclick="() => JoinDecision(decision.Id)" disabled="@isJoining">
+                            @if (joiningDecisionId == decision.Id)
+                            {
+                                <span>Joining the herd...</span>
+                            }
+                            else
+                            {
+                                <span>Join This Pasture 🐄</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private bool isJoining = false;
+    private Guid? joiningDecisionId;
+    private string? errorMessage;
+    private string? successMessage;
+    private Guid userId;
+
+    private string searchTerm = "";
+    private Guid? selectedOrganizationId;
+    private string closingSoonFilter = "";
+
+    private List<PublicBallotListItem> decisions = new();
+    private List<OrganizationListItem> organizations = new();
+
+    private System.Timers.Timer? searchDebounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+                await LoadOrganizations();
+                await LoadDecisions();
+            }
+        }
+    }
+
+    private async Task LoadOrganizations()
+    {
+        try
+        {
+            organizations = await Repository.GetOrganizationsWithPublicBallotsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading herds: {ex.Message}");
+        }
+    }
+
+    private async Task LoadDecisions()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            bool? closingSoon = closingSoonFilter == "true" ? true : null;
+
+            decisions = await Repository.GetPublicBallotsAsync(
+                string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+                selectedOrganizationId,
+                closingSoon,
+                userId
+            );
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error scouting the range: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleSearch(KeyboardEventArgs e)
+    {
+        searchDebounceTimer?.Stop();
+        searchDebounceTimer?.Dispose();
+
+        searchDebounceTimer = new System.Timers.Timer(300);
+        searchDebounceTimer.Elapsed += async (sender, args) =>
+        {
+            searchDebounceTimer?.Stop();
+            await InvokeAsync(async () =>
+            {
+                await LoadDecisions();
+                StateHasChanged();
+            });
+        };
+        searchDebounceTimer.AutoReset = false;
+        searchDebounceTimer.Start();
+    }
+
+    private async Task ApplyFilters()
+    {
+        await LoadDecisions();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = "";
+        selectedOrganizationId = null;
+        closingSoonFilter = "";
+        await LoadDecisions();
+    }
+
+    private async Task JoinDecision(Guid decisionId)
+    {
+        try
+        {
+            isJoining = true;
+            joiningDecisionId = decisionId;
+            errorMessage = null;
+
+            await Repository.JoinBallotAsync(decisionId, userId);
+
+            successMessage = "Welcome to the pasture! It's now in your 'My Pastures' list. Happy grazing! 🐄";
+            await LoadDecisions();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error joining pasture: {ex.Message}";
+        }
+        finally
+        {
+            isJoining = false;
+            joiningDecisionId = null;
+        }
+    }
+
+    private string TruncateDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description)) return "";
+        return description.Length > 100 ? description.Substring(0, 100) + "..." : description;
+    }
+
+    public void Dispose()
+    {
+        searchDebounceTimer?.Dispose();
+    }
+}

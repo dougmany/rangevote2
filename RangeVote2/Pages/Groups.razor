@@ -1,0 +1,187 @@
+@page "/groups"
+@page "/herds"
+@attribute [Authorize]
+
+<PageTitle>My Herds - HerdVote</PageTitle>
+
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>🐄 My Herds</h1>
+    <a href="/group/create" class="btn btn-primary">+ Gather a New Herd</a>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Rounding up the herds...</em></p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    @if (myGroups.Any())
+    {
+        <h3>My Herds (@myGroups.Count)</h3>
+        <div class="list-group mb-4">
+            @foreach (var group in myGroups)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">
+                                @group.Name
+                                @if (group.IsOwner)
+                                {
+                                    <span class="badge bg-primary">Lead Cow</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@group.MyRole</span>
+                                }
+                                @if (group.IsPublic)
+                                {
+                                    <span class="badge bg-info">Open Range</span>
+                                }
+                            </h5>
+                            @if (!string.IsNullOrWhiteSpace(group.Description))
+                            {
+                                <p class="mb-1 text-muted">@group.Description</p>
+                            }
+                            <small class="text-muted">
+                                @group.MemberCount cows · @group.BallotCount pastures
+                            </small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <a href="/group/@group.Id" class="btn btn-sm btn-outline-secondary">View Herd</a>
+                            @if (group.IsOwner)
+                            {
+                                <a href="/group/@group.Id/manage" class="btn btn-sm btn-outline-primary">Manage</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🐄</div>
+            <h3>No Herds Yet</h3>
+            <p>You're not part of any herd yet. Gather your own or join a roaming herd below!</p>
+        </div>
+    }
+
+    @if (publicGroups.Any())
+    {
+        <h3>Roaming Herds to Join (@publicGroups.Count)</h3>
+        <div class="list-group mb-4">
+            @foreach (var group in publicGroups)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">@group.Name</h5>
+                            @if (!string.IsNullOrWhiteSpace(group.Description))
+                            {
+                                <p class="mb-1 text-muted">@group.Description</p>
+                            }
+                            <small class="text-muted">
+                                @group.MemberCount cows · @group.BallotCount pastures
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-success" @onclick="() => JoinGroup(group.Id)" disabled="@isJoining">
+                            @if (joiningGroupId == group.Id)
+                            {
+                                <span>Joining herd...</span>
+                            }
+                            else
+                            {
+                                <span>Join Herd 🐄</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (!myGroups.Any())
+    {
+        <p class="text-muted">No roaming herds available to join.</p>
+    }
+}
+
+@code {
+    private bool isLoading = true;
+    private bool isJoining = false;
+    private Guid? joiningGroupId;
+    private string? errorMessage;
+    private List<OrganizationListItem> myGroups = new();
+    private List<OrganizationListItem> publicGroups = new();
+    private Guid userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+                await LoadGroups();
+            }
+        }
+    }
+
+    private async Task LoadGroups()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            myGroups = await Repository.GetOrganizationsForUserAsync(userId);
+            publicGroups = await Repository.GetPublicOrganizationsAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error rounding up herds: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task JoinGroup(Guid groupId)
+    {
+        try
+        {
+            isJoining = true;
+            joiningGroupId = groupId;
+            errorMessage = null;
+
+            await Repository.JoinOrganizationAsync(groupId, userId);
+            await LoadGroups();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error joining herd: {ex.Message}";
+        }
+        finally
+        {
+            isJoining = false;
+            joiningGroupId = null;
+        }
+    }
+}

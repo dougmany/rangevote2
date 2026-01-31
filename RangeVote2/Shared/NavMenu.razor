@@ -1,60 +1,34 @@
-﻿@using RangeVote2.Data
-@inject RangeVoteRepository _repository
-@inject NavigationManager MyNavigationManager
+@using RangeVote2.Data
+@inject NavigationManager NavigationManager
 
-<div class=@(collapseNavMenu ? "collapse" : null) @onclick=ToggleNavMenu>
-    <h3>Vote!</h3>
-    <p>This is a <a href="https://en.wikipedia.org/wiki/Score_voting">Score Voting system</a>.</p>
-    <p>Similar to the Olympics, give a score from 0 to 9.9 to every trip.</p>
-    <p>It is recommended to give your favorite choice a 9.9 and your lease favorite a 0.</p>
+<nav class="top-nav">
+    <div class="nav-container">
+        <a href="/" class="nav-brand">
+            🐄 HerdVote
+        </a>
 
-</div>
-<div>
-
-    @if (userId is not null && userId != "")
-    {
-    <a href="ballots?userId=@userId">Ballots</a>
-    }
-    else
-    {
-    <a href="">Ballots</a>
-    }
-    <br />
-    <br />
-    @if (voters.Count > 0)
-    {
-        <span>Voted so far:</span>
-        <hr />
-        foreach (var item in voters)
-        {
-            <span>@item.ElectionID: @item.Voters</span><br />
-        }
-    }
-
-</div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-links">
+                    <a href="/decisions" class="nav-link">My Pastures</a>
+                    <a href="/discover" class="nav-link">The Open Range</a>
+                    <a href="/groups" class="nav-link">My Herds</a>
+                </div>
+                <div class="nav-user">
+                    <span class="nav-user-name">@context.User.Identity?.Name</span>
+                    <a href="/logout" class="btn btn-sm btn-secondary">Leave Barn</a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-links"></div>
+                <div class="nav-user">
+                    <a href="/login" class="btn btn-sm btn-secondary">Enter Barn</a>
+                    <a href="/register" class="btn btn-sm btn-primary">Join the Herd</a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>
 
 @code {
-
-    List<VoteCount> voters = new List<VoteCount>();
-    List<String> ballots = new List<string>();
-    String userId;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var votersCall = await _repository.GetVotersAsync();
-        voters = votersCall;
-
-        ballots = _repository.GetBallots();
-
-        var uriBuilder = new UriBuilder(MyNavigationManager.Uri);
-        var q = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
-        userId =  q["userId"] ?? "";
-    }
-
-    bool collapseNavMenu = true;
-
-    void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 }

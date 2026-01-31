@@ -1,0 +1,247 @@
+@page "/decisions"
+@page "/ballots"
+@attribute [Authorize]
+
+<PageTitle>My Pastures - HerdVote</PageTitle>
+
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>🌾 My Pastures</h1>
+    <a href="/decision/create" class="btn btn-primary">+ Plant a Pasture</a>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading the pastures...</em></p>
+}
+else if (!myDecisions.Any() && !sharedDecisions.Any() && !groupDecisions.Any())
+{
+    <div class="empty-state">
+        <div class="empty-state-icon">🌱</div>
+        <h3>No Pastures Yet</h3>
+        <p>Plant your first pasture for the herd to graze on, or roam the open range to find one.</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+            <a href="/decision/create" class="btn btn-primary">Plant a Pasture 🌾</a>
+            <a href="/discover" class="btn btn-secondary">Roam the Range 🏔️</a>
+        </div>
+    </div>
+}
+else
+{
+    @if (myDecisions.Any())
+    {
+        <h3>My Pastures (@myDecisions.Count)</h3>
+        <div class="list-group mb-4">
+            @foreach (var decision in myDecisions)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">
+                                @decision.Name
+                                @if (decision.Status == BallotStatus.Open)
+                                {
+                                    <span class="badge bg-success">Grazing Open</span>
+                                }
+                                else if (decision.Status == BallotStatus.Closed)
+                                {
+                                    <span class="badge bg-secondary">Fenced Off</span>
+                                }
+                                else if (decision.Status == BallotStatus.Draft)
+                                {
+                                    <span class="badge bg-warning">Seeding</span>
+                                }
+                                @if (decision.HasVoted)
+                                {
+                                    <span class="badge bg-info">Grazed</span>
+                                }
+                            </h5>
+                            @if (!string.IsNullOrWhiteSpace(decision.Description))
+                            {
+                                <p class="mb-1 text-muted">@decision.Description</p>
+                            }
+                            <small class="text-muted">
+                                @decision.CandidateCount patches · @decision.VoteCount grazes
+                                @if (decision.IsOrganizationBallot && decision.OrganizationName != null)
+                                {
+                                    <span> · @decision.OrganizationName herd</span>
+                                }
+                                else
+                                {
+                                    <span> · Solo grazing</span>
+                                }
+                                @if (decision.CloseDate.HasValue)
+                                {
+                                    <span> · Closes @decision.CloseDate.Value.ToString("MMM dd, yyyy")</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            @if (decision.CanVote && decision.Status == BallotStatus.Open)
+                            {
+                                <a href="/vote?ballotId=@decision.Id" class="btn btn-sm btn-primary">Graze 🌾</a>
+                            }
+                            <a href="/result?ballotId=@decision.Id" class="btn btn-sm btn-outline-secondary">Digest 💩</a>
+                            @if (decision.IsOwner || decision.CanEdit)
+                            {
+                                <a href="/decision/@decision.Id/manage" class="btn btn-sm btn-outline-primary">Manage</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (sharedDecisions.Any())
+    {
+        <h3>Shared Pastures (@sharedDecisions.Count)</h3>
+        <div class="list-group mb-4">
+            @foreach (var decision in sharedDecisions)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">
+                                @decision.Name
+                                @if (decision.Status == BallotStatus.Open)
+                                {
+                                    <span class="badge bg-success">Grazing Open</span>
+                                }
+                                else if (decision.Status == BallotStatus.Closed)
+                                {
+                                    <span class="badge bg-secondary">Fenced Off</span>
+                                }
+                                @if (decision.HasVoted)
+                                {
+                                    <span class="badge bg-info">Grazed</span>
+                                }
+                            </h5>
+                            @if (!string.IsNullOrWhiteSpace(decision.Description))
+                            {
+                                <p class="mb-1 text-muted">@decision.Description</p>
+                            }
+                            <small class="text-muted">
+                                @decision.CandidateCount patches · @decision.VoteCount grazes
+                                @if (decision.CloseDate.HasValue)
+                                {
+                                    <span> · Closes @decision.CloseDate.Value.ToString("MMM dd, yyyy")</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            @if (decision.CanVote && decision.Status == BallotStatus.Open)
+                            {
+                                <a href="/vote?ballotId=@decision.Id" class="btn btn-sm btn-primary">Graze 🌾</a>
+                            }
+                            <a href="/result?ballotId=@decision.Id" class="btn btn-sm btn-outline-secondary">Digest 💩</a>
+                            @if (decision.CanEdit)
+                            {
+                                <a href="/decision/@decision.Id/manage" class="btn btn-sm btn-outline-primary">Manage</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (groupDecisions.Any())
+    {
+        <h3>Herd Pastures (@groupDecisions.Count)</h3>
+        <div class="list-group mb-4">
+            @foreach (var decision in groupDecisions)
+            {
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">
+                                @decision.Name
+                                @if (decision.Status == BallotStatus.Open)
+                                {
+                                    <span class="badge bg-success">Grazing Open</span>
+                                }
+                                else if (decision.Status == BallotStatus.Closed)
+                                {
+                                    <span class="badge bg-secondary">Fenced Off</span>
+                                }
+                                @if (decision.HasVoted)
+                                {
+                                    <span class="badge bg-info">Grazed</span>
+                                }
+                            </h5>
+                            @if (!string.IsNullOrWhiteSpace(decision.Description))
+                            {
+                                <p class="mb-1 text-muted">@decision.Description</p>
+                            }
+                            <small class="text-muted">
+                                @decision.CandidateCount patches · @decision.VoteCount grazes
+                                @if (decision.OrganizationName != null)
+                                {
+                                    <span> · @decision.OrganizationName herd</span>
+                                }
+                                @if (decision.CloseDate.HasValue)
+                                {
+                                    <span> · Closes @decision.CloseDate.Value.ToString("MMM dd, yyyy")</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            @if (decision.CanVote && decision.Status == BallotStatus.Open)
+                            {
+                                <a href="/vote?ballotId=@decision.Id" class="btn btn-sm btn-primary">Graze 🌾</a>
+                            }
+                            <a href="/result?ballotId=@decision.Id" class="btn btn-sm btn-outline-secondary">Digest 💩</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    private bool isLoading = true;
+    private List<BallotListItem> myDecisions = new();
+    private List<BallotListItem> sharedDecisions = new();
+    private List<BallotListItem> groupDecisions = new();
+    private Guid userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+
+                try
+                {
+                    var allDecisions = await Repository.GetBallotsForUserAsync(userId);
+
+                    myDecisions = allDecisions.Where(b => b.IsOwner).ToList();
+                    sharedDecisions = allDecisions.Where(b => !b.IsOwner && b.MyPermission.HasValue).ToList();
+                    groupDecisions = allDecisions.Where(b => !b.IsOwner && !b.MyPermission.HasValue && b.IsOrganizationBallot).ToList();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading pastures: {ex.Message}");
+                }
+                finally
+                {
+                    isLoading = false;
+                }
+            }
+        }
+    }
+}

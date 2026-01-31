@@ -1,9 +1,54 @@
-﻿@page "/"
+@page "/"
+@inject NavigationManager Navigation
 
-<p>It looks like you are new here.</p>
-<p>If this is your first time, here is a new link just for you.</p>
-<a href="ballots?userId=@Guid.NewGuid().ToString()">Your New Link</a>
-<br />
-<br />
-<p>Save this link to come back next time and update your vote.</p>
-<p>If you are returning, please try to find your link and try again.</p>
+<PageTitle>HerdVote - Where the Herd Gathers to Decide</PageTitle>
+
+<div class="hero">
+    <h1>🐄 Where the Herd Gathers to Decide</h1>
+    <p>HerdVote helps your herd chew on the options together. Everyone grazes on each choice, and the tastiest patch wins. Range voting for the open range!</p>
+
+    <AuthorizeView>
+        <Authorized>
+            <div class="hero-actions">
+                <a href="/decisions" class="btn btn-primary btn-lg">My Pastures 🌾</a>
+                <a href="/discover" class="btn btn-secondary btn-lg">Roam the Range 🏔️</a>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="hero-actions">
+                <a href="/register" class="btn btn-primary btn-lg">Join the Herd 🐮</a>
+                <a href="/login" class="btn btn-secondary btn-lg">Enter the Barn</a>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="empty-state-icon">🌾</div>
+                <h3>Graze the Options</h3>
+                <p class="text-muted">Rate each patch of grass from 0 to 10. The greener, the better! Like a cow at an all-you-can-eat pasture buffet.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="empty-state-icon">💩</div>
+                <h3>The Digest</h3>
+                <p class="text-muted">After the herd has grazed, see what comes out the other end! The highest-rated option is what the herd has truly digested.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="empty-state-icon">🐄</div>
+                <h3>Herd Together</h3>
+                <p class="text-muted">Create herds, invite your fellow cows, and graze together. Open range or private pasture - your moo-ve.</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,48 +1,208 @@
-﻿@page "/result"
+@page "/result"
+@attribute [Authorize]
+
+<PageTitle>The Digest - HerdVote</PageTitle>
 
 @using RangeVote2.Data
-@inject RangeVoteRepository repository
+@using Microsoft.AspNetCore.Authorization
+@inject IRangeVoteRepository Repository
 
-@if (result == null)
+@if (isLoading)
 {
-<p><em>Loading...</em></p>
+    <p><em>Processing the cud...</em></p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+    <a href="/decisions" class="btn btn-secondary">Back to Pastures</a>
 }
 else
 {
-<h1>Results</h1>
+    <div class="mb-4">
+        <h1>💩 The Digest</h1>
+        <h2 class="text-muted">@decisionName</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Score</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var candidate in result.OrderByDescending(t => t.Score))
+        @if (!string.IsNullOrWhiteSpace(decisionDescription))
+        {
+            <p>@decisionDescription</p>
+        }
+    </div>
+
+    @if (isClosed)
+    {
+        <div class="alert alert-success">
+            <strong>Final Output!</strong> - The herd has spoken (and digested)
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <strong>Still Chewing...</strong> - The herd is still grazing, these are preliminary results
+            @if (closeDate.HasValue)
             {
-        <tr>
-            <td>@candidate.Name</td>
-            <td>@candidate.ScoreString</td>
-        </tr>
+                <span> - Grazing closes on @closeDate.Value.ToString("MMMM dd, yyyy")</span>
             }
-    </tbody>
-</table>
+        </div>
+    }
 
+    <p class="mb-4"><strong>@voteCount</strong> @(voteCount == 1 ? "cow has" : "cows have") grazed</p>
+
+    <div class="results-list">
+        @{
+            int rank = 1;
+            var maxScore = resultsList.Any() ? resultsList.Max(c => c.AvgScore) : 1;
+            if (maxScore == 0) maxScore = 1;
+        }
+        @foreach (var choice in resultsList.OrderByDescending(c => c.AvgScore))
+        {
+            <div class="result-item @(rank <= 3 ? "result-item-top" : "")">
+                <div class="result-rank">
+                    @if (rank == 1)
+                    {
+                        <span class="result-medal result-medal-gold">🥇</span>
+                    }
+                    else if (rank == 2)
+                    {
+                        <span class="result-medal result-medal-silver">🥈</span>
+                    }
+                    else if (rank == 3)
+                    {
+                        <span class="result-medal result-medal-bronze">💩</span>
+                    }
+                    else
+                    {
+                        <span class="result-number">@rank</span>
+                    }
+                </div>
+                <div class="result-content">
+                    <div class="result-name">@choice.Name</div>
+                    @if (!string.IsNullOrWhiteSpace(choice.Description))
+                    {
+                        <div class="result-description">@choice.Description</div>
+                    }
+                    <div class="result-bar-container">
+                        <div class="result-bar" style="width: @((choice.AvgScore / maxScore * 100).ToString("F0"))%"></div>
+                    </div>
+                </div>
+                <div class="result-score">
+                    <span class="result-score-value">@choice.AvgScore.ToString("N1")</span>
+                </div>
+            </div>
+            rank++;
+        }
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <a href="/decisions" class="btn btn-secondary">Back to Pastures</a>
+        @if (!isClosed && canVote)
+        {
+            <a href="/vote?ballotId=@decisionId" class="btn btn-primary">Graze Some More 🌾</a>
+        }
+    </div>
 }
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
+    public Guid? ballotId { get; set; }
+
+    // Legacy support
+    [Parameter]
+    [SupplyParameterFromQuery]
     public String? ElectionId { get; set; }
-    Candidate[]? result;
+
+    private class ResultChoice
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public double AvgScore { get; set; }
+    }
+
+    Candidate[]? result; // For legacy
+    private List<ResultChoice> resultsList = new();
+    private string decisionName = "Results";
+    private string? decisionDescription;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private bool isClosed = false;
+    private bool canVote = false;
+    private DateTime? closeDate;
+    private int voteCount = 0;
+    private Guid decisionId;
 
     protected override async Task OnInitializedAsync()
     {
-        if (ElectionId is not null && ElectionId != "")
+        try
         {
-            var resultCall = await repository.GetResultAsync(ElectionId);
-            result = resultCall.Candidates;
+            // New decision system
+            if (ballotId.HasValue)
+            {
+                decisionId = ballotId.Value;
+                await LoadDecisionResults();
+            }
+            // Legacy system
+            else if (!string.IsNullOrWhiteSpace(ElectionId))
+            {
+                await LoadLegacyResults();
+            }
+            else
+            {
+                errorMessage = "No pasture specified. Can't digest what wasn't eaten!";
+            }
         }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading the digest: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadDecisionResults()
+    {
+        // Get decision metadata
+        var decision = await Repository.GetBallotMetadataAsync(decisionId);
+        if (decision == null)
+        {
+            errorMessage = "Pasture not found. Maybe it was never planted?";
+            return;
+        }
+
+        decisionName = decision.Name;
+        decisionDescription = decision.Description;
+        isClosed = decision.Status == BallotStatus.Closed;
+        closeDate = decision.CloseDate;
+        voteCount = decision.VoteCount;
+
+        // Get choices
+        var choices = await Repository.GetCandidatesAsync(decisionId);
+
+        // Get results (average scores)
+        var results = await Repository.GetResultsAsync(decisionId);
+
+        // Build results list
+        foreach (var choice in choices)
+        {
+            var avgScore = results.ContainsKey(choice.Id) ? results[choice.Id] / 10.0 : 0.0;
+            resultsList.Add(new ResultChoice
+            {
+                Id = choice.Id,
+                Name = choice.Name,
+                Description = choice.Description,
+                AvgScore = avgScore
+            });
+        }
+    }
+
+    private async Task LoadLegacyResults()
+    {
+        if (ElectionId == null) return;
+
+        decisionName = ElectionId;
+        var resultCall = await Repository.GetResultAsync(ElectionId);
+        result = resultCall.Candidates;
     }
 }

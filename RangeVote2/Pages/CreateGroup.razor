@@ -1,0 +1,114 @@
+@page "/group/create"
+@page "/herd/create"
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>Gather a Herd - HerdVote</PageTitle>
+
+<h1>🐄 Gather a New Herd</h1>
+<p class="text-muted">Round up your cows and start making decisions together!</p>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@model" OnValidSubmit="@HandleSubmit">
+            <div class="form-group">
+                <label>Herd Name</label>
+                <InputText class="form-control" @bind-Value="model.Name" placeholder="e.g., The Dairy Crew, Weekend Warriors" />
+            </div>
+
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <InputTextArea class="form-control" @bind-Value="model.Description" rows="3" placeholder="What brings this herd together?" />
+            </div>
+
+            <div class="form-group form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="model.IsPublic" id="isPublicCheck" />
+                <label class="form-check-label" for="isPublicCheck">
+                    Let this herd roam the open range
+                </label>
+                <div class="form-text">Open range herds can be discovered and joined by any wandering cow.</div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span>Gathering...</span>
+                    }
+                    else
+                    {
+                        <span>Gather the Herd 🐄</span>
+                    }
+                </button>
+                <a href="/groups" class="btn btn-secondary">Cancel</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private CreateOrganizationModel model = new CreateOrganizationModel();
+    private string? errorMessage;
+    private bool isSaving = false;
+    private Guid userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(model.Name))
+        {
+            errorMessage = "Every herd needs a name!";
+            return;
+        }
+
+        if (model.Name.Length > 100)
+        {
+            errorMessage = "Herd name must be 100 characters or less.";
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+
+            await Repository.CreateOrganizationAsync(
+                model.Name.Trim(),
+                model.Description?.Trim(),
+                model.IsPublic,
+                userId
+            );
+
+            NavigationManager.NavigateTo("/groups");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error gathering herd: {ex.Message}";
+            isSaving = false;
+        }
+    }
+}

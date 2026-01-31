@@ -1,0 +1,115 @@
+@page "/register"
+@using RangeVote2.Data
+@inject IAuthenticationService AuthService
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Join the Herd - HerdVote</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-brand">🐄 HerdVote</h1>
+            <p class="auth-tagline">Where the herd gathers to decide</p>
+        </div>
+
+        <h2>Join the Herd</h2>
+
+        <EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success" role="alert">
+                    @successMessage
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" class="form-control" @bind-Value="registerModel.Email" placeholder="bessie@farm.com" />
+                <ValidationMessage For="@(() => registerModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="displayName">Cow Name</label>
+                <InputText id="displayName" class="form-control" @bind-Value="registerModel.DisplayName" placeholder="What should we call you?" />
+                <ValidationMessage For="@(() => registerModel.DisplayName)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" type="password" class="form-control" @bind-Value="registerModel.Password" placeholder="Choose a secret moo-code" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+                <small class="form-text">Minimum 6 characters</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText id="confirmPassword" type="password" class="form-control" @bind-Value="registerModel.ConfirmPassword" placeholder="Moo it again" />
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+            </div>
+
+            <div class="form-group">
+                <label for="organizationName">Start a Herd (Optional)</label>
+                <InputText id="organizationName" class="form-control" @bind-Value="registerModel.OrganizationName" placeholder="e.g., Family Farm, The Dairy Crew" />
+                <small class="form-text">Gather your cows for group decision-making</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
+                @(isLoading ? "Branding your tag..." : "Join the Herd 🐄")
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            <p>Already part of the herd? <a href="/login">Enter the barn</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading = false;
+
+    private async Task HandleRegister()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var user = await AuthService.RegisterAsync(registerModel);
+
+            if (user == null)
+            {
+                errorMessage = "That email is already tagged. Try another or enter the barn!";
+                isLoading = false;
+                return;
+            }
+
+            successMessage = "Welcome to the herd! 🐄 Moooo-ving you to the pastures...";
+
+            await AuthStateProvider.MarkUserAsAuthenticated(user);
+
+            // Small delay to show success message
+            await Task.Delay(1000);
+            Navigation.NavigateTo("/decisions", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Something went wrong: {ex.Message}";
+            isLoading = false;
+        }
+    }
+}

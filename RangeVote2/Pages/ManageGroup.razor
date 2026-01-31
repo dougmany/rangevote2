@@ -1,0 +1,313 @@
+@page "/group/{GroupId:guid}"
+@page "/group/{GroupId:guid}/manage"
+@page "/herd/{GroupId:guid}"
+@page "/herd/{GroupId:guid}/manage"
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<PageTitle>@(group?.Name ?? "Herd") - HerdVote</PageTitle>
+
+@if (isLoading)
+{
+    <p><em>Rounding up the herd...</em></p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+    <a href="/groups" class="btn btn-secondary">Back to Herds</a>
+}
+else if (group == null)
+{
+    <div class="alert alert-warning">Herd not found. They must have wandered off!</div>
+    <a href="/groups" class="btn btn-secondary">Back to Herds</a>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>
+            🐄 @group.Name
+            @if (group.IsPublic)
+            {
+                <span class="badge bg-info">Open Range</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Private Pasture</span>
+            }
+        </h1>
+        <a href="/groups" class="btn btn-outline-secondary">Back to Herds</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(group.Description))
+    {
+        <p class="lead">@group.Description</p>
+    }
+
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    @if (isOwner)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Herd Settings</h5>
+            </div>
+            <div class="card-body">
+                <EditForm Model="@editModel" OnValidSubmit="@SaveSettings">
+                    <div class="form-group">
+                        <label>Herd Name</label>
+                        <InputText class="form-control" @bind-Value="editModel.Name" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <InputTextArea class="form-control" @bind-Value="editModel.Description" rows="3" />
+                    </div>
+
+                    <div class="form-group form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="editModel.IsPublic" id="editIsPublicCheck" />
+                        <label class="form-check-label" for="editIsPublicCheck">
+                            Let this herd roam the open range
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                        @if (isSaving)
+                        {
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Save Changes</span>
+                        }
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Cows in the Herd (@members.Count)</h5>
+        </div>
+        <div class="card-body">
+            @if (members.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var member in members)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>@(member.DisplayName ?? member.Email)</strong>
+                                @if (member.Role == "Owner")
+                                {
+                                    <span class="badge bg-primary ms-2">Lead Cow 🐄</span>
+                                }
+                                else if (member.Role == "Admin")
+                                {
+                                    <span class="badge bg-info ms-2">Ranch Hand</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary ms-2">Cow</span>
+                                }
+                                <br />
+                                <small class="text-muted">Joined the herd @member.JoinedAt.ToString("MMM dd, yyyy")</small>
+                            </div>
+                            @if (member.UserId == userId && !isOwner)
+                            {
+                                <span class="text-muted">(You)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No cows in this herd yet. Lonely out here!</p>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        @if (!isOwner && isMember)
+        {
+            <button class="btn btn-outline-danger" @onclick="LeaveGroup" disabled="@isLeaving">
+                @if (isLeaving)
+                {
+                    <span>Wandering off...</span>
+                }
+                else
+                {
+                    <span>Leave Herd</span>
+                }
+            </button>
+        }
+
+        @if (isOwner)
+        {
+            <button class="btn btn-danger" @onclick="DeleteGroup" disabled="@isDeleting">
+                @if (isDeleting)
+                {
+                    <span>Dispersing...</span>
+                }
+                else
+                {
+                    <span>Disperse Herd</span>
+                }
+            </button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid GroupId { get; set; }
+
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool isLeaving = false;
+    private bool isDeleting = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private Organization? group;
+    private CreateOrganizationModel editModel = new();
+    private List<OrganizationMemberListItem> members = new();
+    private Guid userId;
+    private bool isOwner = false;
+    private bool isMember = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+                await LoadGroup();
+            }
+        }
+    }
+
+    private async Task LoadGroup()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            group = await Repository.GetOrganizationAsync(GroupId);
+
+            if (group != null)
+            {
+                isOwner = group.OwnerId == userId;
+                isMember = await Repository.IsUserMemberOfOrganizationAsync(GroupId, userId);
+
+                if (!isMember)
+                {
+                    errorMessage = "You're not part of this herd. Mooo-ve along!";
+                    group = null;
+                    return;
+                }
+
+                editModel = new CreateOrganizationModel
+                {
+                    Name = group.Name,
+                    Description = group.Description,
+                    IsPublic = group.IsPublic
+                };
+
+                members = await Repository.GetOrganizationMembersAsync(GroupId);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading herd: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        if (group == null || !isOwner) return;
+
+        if (string.IsNullOrWhiteSpace(editModel.Name))
+        {
+            errorMessage = "Every herd needs a name!";
+            return;
+        }
+
+        try
+        {
+            isSaving = true;
+            errorMessage = null;
+
+            group.Name = editModel.Name.Trim();
+            group.Description = editModel.Description?.Trim();
+            group.IsPublic = editModel.IsPublic;
+
+            await Repository.UpdateOrganizationAsync(group);
+            successMessage = "Herd settings saved! Moo! 🐄";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving settings: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task LeaveGroup()
+    {
+        try
+        {
+            isLeaving = true;
+            errorMessage = null;
+
+            await Repository.LeaveOrganizationAsync(GroupId, userId);
+            NavigationManager.NavigateTo("/groups");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error leaving herd: {ex.Message}";
+            isLeaving = false;
+        }
+    }
+
+    private async Task DeleteGroup()
+    {
+        if (!isOwner) return;
+
+        try
+        {
+            isDeleting = true;
+            errorMessage = null;
+
+            await Repository.DeleteOrganizationAsync(GroupId, userId);
+            NavigationManager.NavigateTo("/groups");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error dispersing herd: {ex.Message}";
+            isDeleting = false;
+        }
+    }
+}

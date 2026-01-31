@@ -1,8 +1,10 @@
 ﻿@page "/audit"
+@attribute [Authorize]
 
 <PageTitle>@ElectionId</PageTitle>
 
 @using RangeVote2.Data
+@using Microsoft.AspNetCore.Authorization
 @inject RangeVoteRepository _repository
 
 @if (ballots == null)
