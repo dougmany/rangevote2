@@ -216,4 +216,14 @@
         public bool IsClosingSoon { get; set; } // Within 7 days
         public DateTime CreatedAt { get; set; }
     }
+
+    // ========== IMPORT RESULT MODELS ==========
+
+    public class ImportResult
+    {
+        public int BallotsImported { get; set; }
+        public int CandidatesImported { get; set; }
+        public List<string> Errors { get; set; } = new();
+        public bool Success => Errors.Count == 0;
+    }
 }

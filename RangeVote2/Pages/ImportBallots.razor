@@ -1,0 +1,253 @@
+@page "/import"
+@attribute [Authorize]
+
+<PageTitle>Import Ballots - range.vote</PageTitle>
+
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="container mt-4">
+    <h1>📥 Import Ballots from JSON</h1>
+    <p class="text-muted">Import ballot data from Ballots.json into the database</p>
+
+    @if (isLoadingPreview)
+    {
+        <div class="alert alert-info">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading ballot preview...
+        </div>
+    }
+    else if (isImporting)
+    {
+        <div class="alert alert-info">
+            <div class="spinner-border spinner-border-sm me-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Importing selected ballots... (@selectedElections.Count selected)
+        </div>
+    }
+    else if (importResult != null)
+    {
+        @if (importResult.Success)
+        {
+            <div class="alert alert-success">
+                <h4 class="alert-heading">✅ Import Successful!</h4>
+                <p>
+                    <strong>@importResult.BallotsImported</strong> ballots imported<br />
+                    <strong>@importResult.CandidatesImported</strong> candidates imported
+                </p>
+                <hr />
+                <p class="mb-0">
+                    <a href="/decisions" class="btn btn-sm btn-primary">View My Pastures</a>
+                    <button class="btn btn-sm btn-secondary" @onclick="ResetImport">Import Again</button>
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">❌ Import Failed</h4>
+                <ul class="mb-0">
+                    @foreach (var error in importResult.Errors)
+                    {
+                        <li>@error</li>
+                    }
+                </ul>
+                <hr />
+                <button class="btn btn-sm btn-secondary" @onclick="ResetImport">Try Again</button>
+            </div>
+        }
+    }
+    else if (ballotPreview != null && ballotPreview.Any())
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Select Ballots to Import</h5>
+                <p class="card-text">
+                    Found <strong>@ballotPreview.Count</strong> ballots in Ballots.json. Select which ones to import:
+                </p>
+
+                <div class="mb-3">
+                    <button class="btn btn-sm btn-outline-primary me-2" @onclick="SelectAll">Select All</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="DeselectAll">Deselect All</button>
+                </div>
+
+                <div class="list-group mb-3" style="max-height: 500px; overflow-y: auto;">
+                    @foreach (var ballot in ballotPreview.OrderBy(b => b.Key))
+                    {
+                        <label class="list-group-item d-flex align-items-center">
+                            <input
+                                type="checkbox"
+                                class="form-check-input me-3"
+                                checked="@selectedElections.Contains(ballot.Key)"
+                                @onchange="@((e) => ToggleSelection(ballot.Key, (bool)e.Value!))"
+                            />
+                            <div class="flex-grow-1">
+                                <strong>@ballot.Key</strong>
+                                <br />
+                                <small class="text-muted">@ballot.Value candidates</small>
+                            </div>
+                        </label>
+                    }
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>@selectedElections.Count</strong> ballots selected
+                    @if (selectedElections.Count > 0)
+                    {
+                        <span>
+                            (@ballotPreview.Where(b => selectedElections.Contains(b.Key)).Sum(b => b.Value) candidates total)
+                        </span>
+                    }
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    @onclick="StartImport"
+                    disabled="@(selectedElections.Count == 0)">
+                    🚀 Import Selected Ballots
+                </button>
+                <a href="/decisions" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Import Details</h5>
+                <ul class="small">
+                    <li>Creates a new ballot for each selected ElectionId</li>
+                    <li>Imports all candidates for each ballot</li>
+                    <li>Skips existing ballots and candidates to avoid duplicates</li>
+                    <li>Makes all imported ballots public and open for voting</li>
+                </ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <h4 class="alert-heading">⚠️ No Ballots Found</h4>
+            <p class="mb-0">
+                Could not find any ballots in Ballots.json. Make sure the file exists and contains valid ballot data.
+            </p>
+        </div>
+    }
+</div>
+
+@code {
+    private bool isLoadingPreview = true;
+    private bool isImporting = false;
+    private ImportResult? importResult = null;
+    private Dictionary<string, int>? ballotPreview = null;
+    private HashSet<string> selectedElections = new HashSet<string>();
+    private Guid userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                userId = Guid.Parse(userIdClaim.Value);
+            }
+        }
+
+        // Load preview
+        await LoadPreview();
+    }
+
+    private async Task LoadPreview()
+    {
+        isLoadingPreview = true;
+        StateHasChanged();
+
+        try
+        {
+            ballotPreview = await Repository.PreviewBallotsFromJsonAsync();
+            // Auto-select all by default
+            selectedElections = new HashSet<string>(ballotPreview.Keys);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading preview: {ex.Message}");
+            ballotPreview = new Dictionary<string, int>();
+        }
+        finally
+        {
+            isLoadingPreview = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleSelection(string electionId, bool isSelected)
+    {
+        if (isSelected)
+        {
+            selectedElections.Add(electionId);
+        }
+        else
+        {
+            selectedElections.Remove(electionId);
+        }
+        StateHasChanged();
+    }
+
+    private void SelectAll()
+    {
+        if (ballotPreview != null)
+        {
+            selectedElections = new HashSet<string>(ballotPreview.Keys);
+            StateHasChanged();
+        }
+    }
+
+    private void DeselectAll()
+    {
+        selectedElections.Clear();
+        StateHasChanged();
+    }
+
+    private async Task StartImport()
+    {
+        if (selectedElections.Count == 0)
+        {
+            return;
+        }
+
+        isImporting = true;
+        importResult = null;
+        StateHasChanged();
+
+        try
+        {
+            importResult = await Repository.ImportBallotsFromJsonAsync(userId, null, selectedElections.ToList());
+        }
+        catch (Exception ex)
+        {
+            importResult = new ImportResult
+            {
+                Errors = new List<string> { $"Unexpected error: {ex.Message}" }
+            };
+        }
+        finally
+        {
+            isImporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetImport()
+    {
+        importResult = null;
+        await LoadPreview();
+    }
+}

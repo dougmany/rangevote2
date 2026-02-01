@@ -82,6 +82,10 @@ namespace RangeVote2.Data
         Task<List<PublicBallotListItem>> GetPublicBallotsAsync(string? searchTerm, Guid? organizationId, bool? closingSoon, Guid excludeUserId);
         Task JoinBallotAsync(Guid ballotId, Guid userId);
         Task<List<OrganizationListItem>> GetOrganizationsWithPublicBallotsAsync();
+
+        // ========== IMPORT METHODS ==========
+        Task<ImportResult> ImportBallotsFromJsonAsync(Guid userId, string? jsonFilePath = null, List<string>? electionIdsToImport = null);
+        Task<Dictionary<string, int>> PreviewBallotsFromJsonAsync(string? jsonFilePath = null);
     }
 
     public class RangeVoteRepository : IRangeVoteRepository
@@ -613,7 +617,13 @@ namespace RangeVote2.Data
                 @"UPDATE ballot_candidates
                   SET Name = @Name, Description = @Description, ImageLink = @ImageLink
                   WHERE Id = @Id",
-                candidate
+                new
+                {
+                    Id = candidate.Id.ToString(),
+                    candidate.Name,
+                    candidate.Description,
+                    candidate.ImageLink
+                }
             );
         }
 
@@ -1575,6 +1585,219 @@ namespace RangeVote2.Data
             }
 
             return items;
+        }
+
+        // ========== IMPORT METHODS IMPLEMENTATION ==========
+
+        public async Task<Dictionary<string, int>> PreviewBallotsFromJsonAsync(string? jsonFilePath = null)
+        {
+            var preview = new Dictionary<string, int>();
+
+            try
+            {
+                // Use provided path or default to Ballots.json
+                string filePath = jsonFilePath ?? "Ballots.json";
+
+                if (!File.Exists(filePath))
+                {
+                    return preview;
+                }
+
+                // Read and deserialize the JSON file
+                string json = await File.ReadAllTextAsync(filePath);
+                var allCandidates = JsonConvert.DeserializeObject<Candidate[]>(json);
+
+                if (allCandidates == null || allCandidates.Length == 0)
+                {
+                    return preview;
+                }
+
+                // Group candidates by ElectionID and count them
+                var groupedByElection = allCandidates
+                    .Where(c => !string.IsNullOrEmpty(c.ElectionID))
+                    .GroupBy(c => c.ElectionID)
+                    .ToDictionary(g => g.Key!, g => g.Count());
+
+                return groupedByElection;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PreviewBallotsFromJsonAsync] Error: {ex.Message}");
+                return preview;
+            }
+        }
+
+        public async Task<ImportResult> ImportBallotsFromJsonAsync(Guid userId, string? jsonFilePath = null, List<string>? electionIdsToImport = null)
+        {
+            var result = new ImportResult();
+
+            try
+            {
+                // Use provided path or default to Ballots.json
+                string filePath = jsonFilePath ?? "Ballots.json";
+
+                if (!File.Exists(filePath))
+                {
+                    result.Errors.Add($"File not found: {filePath}");
+                    return result;
+                }
+
+                // Read and deserialize the JSON file
+                string json = await File.ReadAllTextAsync(filePath);
+                var allCandidates = JsonConvert.DeserializeObject<Candidate[]>(json);
+
+                if (allCandidates == null || allCandidates.Length == 0)
+                {
+                    result.Errors.Add("No candidates found in JSON file");
+                    return result;
+                }
+
+                // Group candidates by ElectionID
+                var groupedByElection = allCandidates
+                    .Where(c => !string.IsNullOrEmpty(c.ElectionID))
+                    .GroupBy(c => c.ElectionID)
+                    .ToList();
+
+                // Filter by selected elections if provided
+                if (electionIdsToImport != null && electionIdsToImport.Any())
+                {
+                    groupedByElection = groupedByElection
+                        .Where(g => electionIdsToImport.Contains(g.Key!))
+                        .ToList();
+                }
+
+                using var connection = new SqliteConnection(_config.DatabaseName);
+
+                // For each election, create a ballot and its candidates
+                foreach (var group in groupedByElection)
+                {
+                    string electionId = group.Key!;
+                    var candidates = group.ToList();
+
+                    // Check if ballot already exists
+                    var existingBallot = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                        @"SELECT Id FROM ballots WHERE Name = @Name",
+                        new { Name = electionId }
+                    );
+
+                    Guid ballotId;
+
+                    if (existingBallot != null)
+                    {
+                        // Use existing ballot ID
+                        ballotId = Guid.Parse(existingBallot.Id);
+                        Console.WriteLine($"[ImportBallotsFromJsonAsync] Found existing ballot: {electionId} ({ballotId})");
+                    }
+                    else
+                    {
+                        // Create new ballot
+                        ballotId = Guid.NewGuid();
+                        var now = DateTime.UtcNow;
+
+                        var ballot = new BallotMetadata
+                        {
+                            Id = ballotId,
+                            Name = electionId,
+                            Description = $"Imported from Ballots.json - {candidates.Count} options",
+                            OwnerId = userId,
+                            OrganizationId = null,
+                            Status = BallotStatus.Open,
+                            CreatedAt = now,
+                            CloseDate = null,
+                            IsOpen = true,
+                            IsPublic = true,
+                            CandidateCount = candidates.Count,
+                            VoteCount = 0
+                        };
+
+                        await connection.ExecuteAsync(
+                            @"INSERT INTO ballots (Id, Name, Description, OwnerId, OrganizationId, Status, CreatedAt, CloseDate, IsOpen, IsPublic, CandidateCount, VoteCount)
+                              VALUES (@Id, @Name, @Description, @OwnerId, @OrganizationId, @Status, @CreatedAt, @CloseDate, @IsOpen, @IsPublic, @CandidateCount, @VoteCount)",
+                            new
+                            {
+                                Id = ballot.Id.ToString(),
+                                ballot.Name,
+                                ballot.Description,
+                                OwnerId = ballot.OwnerId.ToString(),
+                                OrganizationId = ballot.OrganizationId?.ToString(),
+                                Status = (int)ballot.Status,
+                                CreatedAt = ballot.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                                CloseDate = ballot.CloseDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                                IsOpen = ballot.IsOpen ? 1 : 0,
+                                IsPublic = ballot.IsPublic ? 1 : 0,
+                                ballot.CandidateCount,
+                                ballot.VoteCount
+                            }
+                        );
+
+                        result.BallotsImported++;
+                        Console.WriteLine($"[ImportBallotsFromJsonAsync] Created ballot: {electionId} ({ballotId})");
+                    }
+
+                    // Add candidates to the ballot
+                    foreach (var candidate in candidates)
+                    {
+                        // Check if candidate already exists
+                        var existingCandidate = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                            @"SELECT Id FROM ballot_candidates WHERE BallotId = @BallotId AND Name = @Name",
+                            new { BallotId = ballotId.ToString(), Name = candidate.Name }
+                        );
+
+                        if (existingCandidate == null)
+                        {
+                            var ballotCandidate = new BallotCandidate
+                            {
+                                Id = Guid.NewGuid(),
+                                BallotId = ballotId,
+                                Name = candidate.Name ?? "Unnamed",
+                                Description = candidate.Description,
+                                ImageLink = candidate.Image_link,
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            await connection.ExecuteAsync(
+                                @"INSERT INTO ballot_candidates (Id, BallotId, Name, Description, ImageLink, CreatedAt)
+                                  VALUES (@Id, @BallotId, @Name, @Description, @ImageLink, @CreatedAt)",
+                                new
+                                {
+                                    Id = ballotCandidate.Id.ToString(),
+                                    BallotId = ballotCandidate.BallotId.ToString(),
+                                    ballotCandidate.Name,
+                                    ballotCandidate.Description,
+                                    ballotCandidate.ImageLink,
+                                    CreatedAt = ballotCandidate.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                                }
+                            );
+
+                            result.CandidatesImported++;
+                        }
+                    }
+
+                    // Update candidate count for existing ballots
+                    if (existingBallot != null)
+                    {
+                        var candidateCount = await connection.ExecuteScalarAsync<int>(
+                            @"SELECT COUNT(*) FROM ballot_candidates WHERE BallotId = @BallotId",
+                            new { BallotId = ballotId.ToString() }
+                        );
+
+                        await connection.ExecuteAsync(
+                            @"UPDATE ballots SET CandidateCount = @CandidateCount WHERE Id = @Id",
+                            new { CandidateCount = candidateCount, Id = ballotId.ToString() }
+                        );
+                    }
+                }
+
+                Console.WriteLine($"[ImportBallotsFromJsonAsync] Import complete: {result.BallotsImported} ballots, {result.CandidatesImported} candidates");
+            }
+            catch (Exception ex)
+            {
+                result.Errors.Add($"Import failed: {ex.Message}");
+                Console.WriteLine($"[ImportBallotsFromJsonAsync] Error: {ex.Message}");
+                Console.WriteLine($"[ImportBallotsFromJsonAsync] Stack trace: {ex.StackTrace}");
+            }
+
+            return result;
         }
     }
 

@@ -86,18 +86,61 @@ else if (decision != null)
 
                 @foreach (var choice in choices)
                 {
+                    var isEditing = editingChoiceId == choice.Id;
+
                     <div class="card mb-3">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="mb-1">@choice.Name</h5>
-                                    @if (!string.IsNullOrWhiteSpace(choice.Description))
+                            @if (isEditing && editingChoice != null)
+                            {
+                                @* Edit Mode *@
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <input type="text" class="form-control" @bind="editingChoice.Name" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Description (optional)</label>
+                                    <input type="text" class="form-control" @bind="editingChoice.Description" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Image URL (optional)</label>
+                                    <input type="text" class="form-control" @bind="editingChoice.ImageLink" placeholder="https://example.com/image.jpg" />
+                                    @if (!string.IsNullOrWhiteSpace(editingChoice.ImageLink))
                                     {
-                                        <p class="text-muted mb-0">@choice.Description</p>
+                                        <div class="mt-2">
+                                            <img src="@editingChoice.ImageLink" alt="Preview" class="image-preview" @onerror="@(() => {})" />
+                                        </div>
                                     }
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => DeleteChoice(choice.Id)">Remove</button>
-                            </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-success" @onclick="SaveEditingChoice">Save</button>
+                                    <button class="btn btn-sm btn-secondary" @onclick="CancelEditingChoice">Cancel</button>
+                                </div>
+                            }
+                            else
+                            {
+                                @* View Mode *@
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
+                                    {
+                                        <img src="@choice.ImageLink" alt="@choice.Name" class="image-preview" style="flex-shrink: 0;" />
+                                    }
+                                    <div style="flex: 1;">
+                                        <h5 class="mb-1">@choice.Name</h5>
+                                        @if (!string.IsNullOrWhiteSpace(choice.Description))
+                                        {
+                                            <p class="text-muted mb-1">@choice.Description</p>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
+                                        {
+                                            <small class="text-muted d-block" style="word-break: break-all;">Image: @choice.ImageLink</small>
+                                        }
+                                    </div>
+                                    <div class="d-flex gap-2" style="flex-shrink: 0;">
+                                        <button class="btn btn-sm btn-outline-primary" @onclick="() => StartEditingChoice(choice)">Edit</button>
+                                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => DeleteChoice(choice.Id)">Remove</button>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     </div>
                 }
@@ -118,6 +161,16 @@ else if (decision != null)
                             <input type="text" class="form-control" @bind="newChoice.Description" placeholder="Add details..." />
                         </div>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>Image URL (optional)</label>
+                    <input type="text" class="form-control" @bind="newChoice.ImageLink" placeholder="https://example.com/image.jpg" />
+                    @if (!string.IsNullOrWhiteSpace(newChoice.ImageLink))
+                    {
+                        <div class="mt-2">
+                            <img src="@newChoice.ImageLink" alt="Preview" class="image-preview" @onerror="@(() => {})" />
+                        </div>
+                    }
                 </div>
                 <button class="btn btn-success" @onclick="AddChoice">Add Choice</button>
             </div>
@@ -234,6 +287,10 @@ else if (decision != null)
     private string inviteEmail = "";
     private UserPermission invitePermission = UserPermission.Voter;
 
+    // Edit mode state
+    private Guid? editingChoiceId = null;
+    private BallotCandidate? editingChoice = null;
+
     private string activeTab = "details";
     private bool isLoading = true;
     private string? errorMessage;
@@ -348,6 +405,48 @@ else if (decision != null)
         {
             errorMessage = $"Error removing choice: {ex.Message}";
         }
+    }
+
+    private void StartEditingChoice(BallotCandidate choice)
+    {
+        editingChoiceId = choice.Id;
+        editingChoice = new BallotCandidate
+        {
+            Id = choice.Id,
+            BallotId = choice.BallotId,
+            Name = choice.Name,
+            Description = choice.Description,
+            ImageLink = choice.ImageLink,
+            CreatedAt = choice.CreatedAt
+        };
+    }
+
+    private async Task SaveEditingChoice()
+    {
+        if (editingChoice == null || string.IsNullOrWhiteSpace(editingChoice.Name))
+        {
+            errorMessage = "Choice name is required.";
+            return;
+        }
+
+        try
+        {
+            await Repository.UpdateCandidateAsync(editingChoice);
+            editingChoiceId = null;
+            editingChoice = null;
+            await LoadDecision();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving choice: {ex.Message}";
+        }
+    }
+
+    private void CancelEditingChoice()
+    {
+        editingChoiceId = null;
+        editingChoice = null;
     }
 
     private async Task CreateShareLink()

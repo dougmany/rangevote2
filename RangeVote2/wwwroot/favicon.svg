@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Cow face themed for range.vote -->
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#fffbeb"/>
+
+  <!-- Cow face -->
+  <!-- Head -->
+  <ellipse cx="32" cy="34" rx="20" ry="22" fill="#f5f5f5"/>
+
+  <!-- Spots -->
+  <ellipse cx="22" cy="28" rx="5" ry="6" fill="#292524"/>
+  <ellipse cx="42" cy="28" rx="6" ry="5" fill="#292524"/>
+  <circle cx="28" cy="42" r="3" fill="#292524"/>
+
+  <!-- Snout -->
+  <ellipse cx="32" cy="42" rx="10" ry="8" fill="#ffc9c9"/>
+
+  <!-- Nostrils -->
+  <ellipse cx="28" cy="42" rx="2" ry="3" fill="#292524"/>
+  <ellipse cx="36" cy="42" rx="2" ry="3" fill="#292524"/>
+
+  <!-- Eyes -->
+  <circle cx="26" cy="28" r="3" fill="#fff"/>
+  <circle cx="38" cy="28" r="3" fill="#fff"/>
+  <circle cx="26" cy="28" r="2" fill="#292524"/>
+  <circle cx="38" cy="28" r="2" fill="#292524"/>
+
+  <!-- Ears -->
+  <ellipse cx="16" cy="24" rx="4" ry="8" fill="#f5f5f5"/>
+  <ellipse cx="48" cy="24" rx="4" ry="8" fill="#f5f5f5"/>
+  <ellipse cx="16" cy="24" rx="2" ry="5" fill="#ffc9c9"/>
+  <ellipse cx="48" cy="24" rx="2" ry="5" fill="#ffc9c9"/>
+
+  <!-- Smile -->
+  <path d="M 27 48 Q 32 50 37 48" stroke="#292524" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>

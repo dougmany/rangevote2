@@ -1,7 +1,7 @@
 @page "/vote"
 @attribute [Authorize]
 
-<PageTitle>@decisionName - Graze - HerdVote</PageTitle>
+<PageTitle>@decisionName - Graze - range.vote</PageTitle>
 
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
@@ -39,47 +39,123 @@ else if (choices.Any())
         }
     </div>
 
-    <p class="text-muted mb-4">Rate each patch of grass. Tastier patches get higher scores! The patches will sort themselves as you graze.</p>
+    <div class="vote-layout">
+        @* Left Pane: Voting List *@
+        <div class="vote-list-pane">
+            @foreach (var choice in choices.OrderByDescending(t => t.Score))
+            {
+                var rank = GetRank(choice.Id);
+                var isSelected = choice.Id == selectedChoiceId;
 
-    <div class="row">
-        @foreach (var choice in choices.OrderByDescending(t => t.Score))
-        {
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="vote-card">
+                <div class="vote-list-item @(isSelected ? "selected" : "")"
+                     @onclick="@(() => SelectChoice(choice.Id))">
+
+                    @* Rank Badge *@
+                    <div class="vote-rank-badge rank-@rank">
+                        #@rank
+                    </div>
+
+                    @* Thumbnail *@
                     @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
                     {
-                        <img src="@choice.ImageLink" alt="@choice.Name" class="vote-card-image" />
+                        <img src="@choice.ImageLink" alt="@choice.Name" class="vote-item-thumbnail" />
                     }
-                    <div class="vote-card-body">
-                        <h4 class="vote-card-title">@choice.Name</h4>
+
+                    @* Content *@
+                    <div class="vote-item-content">
+                        <div class="vote-item-name">@choice.Name</div>
                         @if (!string.IsNullOrWhiteSpace(choice.Description))
                         {
-                            <p class="vote-card-description">@choice.Description</p>
+                            <div class="vote-item-description">@choice.Description</div>
                         }
                     </div>
-                    <div class="vote-controls">
-                        @if (!isClosed)
-                        {
-                            <button class="vote-btn vote-btn-down" @onclick="@(() => DecrementScore(choice.Id, 10))" title="Much less tasty!">
+
+                    @* Compact Controls *@
+                    @if (!isClosed)
+                    {
+                        <div class="vote-item-controls" @onclick:stopPropagation="true">
+                            <button class="vote-btn-compact vote-btn-down"
+                                    @onclick="@(() => DecrementScore(choice.Id, 10))"
+                                    title="Much less tasty!">−−</button>
+                            <button class="vote-btn-compact vote-btn-down-small"
+                                    @onclick="@(() => DecrementScore(choice.Id, 1))"
+                                    title="Slightly less tasty">−</button>
+                            <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
+                            <button class="vote-btn-compact vote-btn-up-small"
+                                    @onclick="@(() => IncrementScore(choice.Id, 1))"
+                                    title="Slightly tastier">+</button>
+                            <button class="vote-btn-compact vote-btn-up"
+                                    @onclick="@(() => IncrementScore(choice.Id, 10))"
+                                    title="Much tastier!">++</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
+                    }
+                </div>
+            }
+        </div>
+
+        @* Right Pane: Detail View *@
+        @if (SelectedChoice != null)
+        {
+            <div class="vote-detail-pane">
+                <div class="vote-detail-header">
+                    @if (!string.IsNullOrWhiteSpace(SelectedChoice.ImageLink))
+                    {
+                        <img src="@SelectedChoice.ImageLink" alt="@SelectedChoice.Name" class="vote-detail-image" />
+                    }
+                    else
+                    {
+                        <div class="vote-detail-image-placeholder">🌾</div>
+                    }
+                </div>
+
+                <div class="vote-detail-body">
+                    <div class="vote-detail-rank">
+                        @if (GetRank(SelectedChoice.Id) == 1) { <span>🥇</span> }
+                        else if (GetRank(SelectedChoice.Id) == 2) { <span>🥈</span> }
+                        else if (GetRank(SelectedChoice.Id) == 3) { <span>🥉</span> }
+                        Rank #@GetRank(SelectedChoice.Id)
+                    </div>
+
+                    <h2 class="vote-detail-name">@SelectedChoice.Name</h2>
+
+                    @if (!string.IsNullOrWhiteSpace(SelectedChoice.Description))
+                    {
+                        <div class="vote-detail-description">@SelectedChoice.Description</div>
+                    }
+
+                    <div class="vote-detail-score-section">
+                        <div class="vote-detail-score-value">@((SelectedChoice.Score / 10.0).ToString("N1"))</div>
+                    </div>
+
+                    @if (!isClosed)
+                    {
+                        <div class="vote-detail-controls">
+                            <button class="vote-btn vote-btn-down"
+                                    @onclick="@(() => DecrementScore(SelectedChoice.Id, 10))"
+                                    title="Much less tasty!">
                                 <span>−−</span>
                             </button>
-                            <button class="vote-btn vote-btn-down-small" @onclick="@(() => DecrementScore(choice.Id, 1))" title="Slightly less tasty">
+                            <button class="vote-btn vote-btn-down-small"
+                                    @onclick="@(() => DecrementScore(SelectedChoice.Id, 1))"
+                                    title="Slightly less tasty">
                                 <span>−</span>
                             </button>
-                        }
-                        <div class="vote-score">
-                            <span class="vote-score-value">@((choice.Score / 10.0).ToString("N1"))</span>
-                        </div>
-                        @if (!isClosed)
-                        {
-                            <button class="vote-btn vote-btn-up-small" @onclick="@(() => IncrementScore(choice.Id, 1))" title="Slightly tastier">
+                            <button class="vote-btn vote-btn-up-small"
+                                    @onclick="@(() => IncrementScore(SelectedChoice.Id, 1))"
+                                    title="Slightly tastier">
                                 <span>+</span>
                             </button>
-                            <button class="vote-btn vote-btn-up" @onclick="@(() => IncrementScore(choice.Id, 10))" title="Much tastier!">
+                            <button class="vote-btn vote-btn-up"
+                                    @onclick="@(() => IncrementScore(SelectedChoice.Id, 10))"
+                                    title="Much tastier!">
                                 <span>++</span>
                             </button>
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
             </div>
         }
@@ -146,6 +222,10 @@ else if (choices.Any())
     private string? decisionDescription;
     private Guid userId;
     private Guid currentDecisionId;
+
+    // Selection state for detail panel
+    private Guid? selectedChoiceId = null;
+    private VoteChoice? SelectedChoice => choices.FirstOrDefault(c => c.Id == selectedChoiceId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -218,6 +298,12 @@ else if (choices.Any())
         // Get existing votes
         var existingVotes = await Repository.GetUserVotesAsync(currentDecisionId, userId);
 
+        // DEBUG: Show vote count
+        if (existingVotes.Any())
+        {
+            message = $"Loaded {existingVotes.Count} existing votes";
+        }
+
         // Build choice list with scores
         foreach (var choice in decisionChoices)
         {
@@ -231,6 +317,12 @@ else if (choices.Any())
                 Score = existingVote?.Score ?? 50 // Default to 50 (5.0)
             });
         }
+
+        // Auto-select first item (highest score)
+        if (choices.Any())
+        {
+            selectedChoiceId = choices.OrderByDescending(c => c.Score).First().Id;
+        }
     }
 
     private async Task LoadLegacyBallot()
@@ -240,6 +332,19 @@ else if (choices.Any())
         decisionName = electionId;
         var ballot = await Repository.GetBallotAsync(userId, electionId);
         candidates = ballot.Candidates;
+    }
+
+    void SelectChoice(Guid id)
+    {
+        selectedChoiceId = id;
+        StateHasChanged();
+    }
+
+    int GetRank(Guid choiceId)
+    {
+        return choices.OrderByDescending(c => c.Score)
+                      .ToList()
+                      .FindIndex(c => c.Id == choiceId) + 1;
     }
 
     void IncrementScore(Guid choiceId, int amount)

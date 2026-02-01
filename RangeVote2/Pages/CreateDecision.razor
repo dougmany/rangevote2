@@ -7,7 +7,7 @@
 @inject NavigationManager NavigationManager
 @attribute [Authorize]
 
-<PageTitle>Plant a Pasture - HerdVote</PageTitle>
+<PageTitle>Plant a Pasture - range.vote</PageTitle>
 
 <h1>🌱 Plant a New Pasture</h1>
 <p class="text-muted">Set up some patches of grass for your herd to graze on.</p>
@@ -81,9 +81,22 @@
                             <label>Name</label>
                             <InputText class="form-control" @bind-Value="model.Candidates[index].Name" placeholder="e.g., Italian restaurant" />
                         </div>
-                        <div class="form-group mb-0">
+                        <div class="form-group">
                             <label>Description (optional)</label>
                             <InputText class="form-control" @bind-Value="model.Candidates[index].Description" placeholder="What makes this patch special?" />
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Image URL (optional)</label>
+                            <InputText class="form-control" @bind-Value="model.Candidates[index].ImageLink" placeholder="https://example.com/image.jpg" />
+                            @if (!string.IsNullOrWhiteSpace(model.Candidates[index].ImageLink))
+                            {
+                                <div class="mt-2">
+                                    <img src="@model.Candidates[index].ImageLink"
+                                         alt="Preview"
+                                         class="image-preview"
+                                         @onerror="@(() => {})" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>
