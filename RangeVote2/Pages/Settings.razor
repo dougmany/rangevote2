@@ -1,0 +1,243 @@
+@page "/settings"
+@using RangeVote2.Data
+@inject IThemeService ThemeService
+@inject NavigationManager NavigationManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Settings - range.vote</PageTitle>
+
+<div class="container">
+    <div class="settings-container">
+        <h1>⚙️ Settings</h1>
+        <p class="text-muted">Customize your range.vote experience</p>
+
+        <div class="settings-section">
+            <h2>🎨 Theme</h2>
+            <p class="text-muted">Choose your preferred theme to personalize the look and feel</p>
+
+            @if (isLoading)
+            {
+                <div class="loading-state">
+                    <p>Loading themes...</p>
+                </div>
+            }
+            else
+            {
+                <div class="theme-grid">
+                    @foreach (var theme in availableThemes)
+                    {
+                        <div class="theme-card @(selectedTheme == theme.Id ? "selected" : "")"
+                             @onclick="() => SelectTheme(theme.Id)">
+                            <div class="theme-emoji">@theme.Emoji</div>
+                            <h3>@theme.Name</h3>
+                            <p class="theme-description">@theme.Description</p>
+                            <div class="theme-color-preview">
+                                <div class="color-swatch" style="background-color: @theme.PrimaryColor;"></div>
+                            </div>
+                            @if (selectedTheme == theme.Id)
+                            {
+                                <div class="selected-badge">✓ Selected</div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(message))
+                {
+                    <div class="alert alert-success">
+                        @message
+                    </div>
+                }
+
+                <div class="settings-actions">
+                    <button class="btn btn-primary" @onclick="SaveTheme" disabled="@isSaving">
+                        @(isSaving ? "Saving..." : "Save Theme")
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .settings-section {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .settings-section h2 {
+        margin-top: 0;
+        color: var(--color-primary);
+    }
+
+    .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--spacing-lg);
+        margin: var(--spacing-xl) 0;
+    }
+
+    .theme-card {
+        background: var(--color-bg);
+        border: 3px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .theme-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--color-primary);
+    }
+
+    .theme-card.selected {
+        border-color: var(--color-primary);
+        background: var(--color-primary-light);
+        box-shadow: 0 0 0 4px var(--color-primary-light);
+    }
+
+    .theme-emoji {
+        font-size: 3rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .theme-card h3 {
+        font-size: 1.25rem;
+        margin: var(--spacing-sm) 0;
+        color: var(--color-text);
+    }
+
+    .theme-description {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-md);
+        min-height: 3rem;
+    }
+
+    .theme-color-preview {
+        display: flex;
+        justify-content: center;
+        gap: var(--spacing-xs);
+        margin-top: var(--spacing-md);
+    }
+
+    .color-swatch {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        border: 2px solid var(--color-border);
+    }
+
+    .selected-badge {
+        position: absolute;
+        top: var(--spacing-sm);
+        right: var(--spacing-sm);
+        background: var(--color-primary);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-md);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .settings-actions {
+        margin-top: var(--spacing-xl);
+        display: flex;
+        gap: var(--spacing-md);
+        justify-content: flex-end;
+    }
+
+    .alert {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        margin-top: var(--spacing-md);
+    }
+
+    .alert-success {
+        background: var(--color-success-bg);
+        color: var(--color-success);
+        border: 1px solid var(--color-success);
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: var(--spacing-xl);
+        color: var(--color-text-muted);
+    }
+</style>
+
+@code {
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string selectedTheme = "cow";
+    private string currentTheme = "cow";
+    private string message = "";
+    private List<ThemeInfo> availableThemes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            currentTheme = await ThemeService.GetCurrentThemeAsync();
+            selectedTheme = currentTheme;
+            availableThemes = ThemeService.GetAvailableThemes();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectTheme(string themeId)
+    {
+        selectedTheme = themeId;
+        message = "";
+    }
+
+    private async Task SaveTheme()
+    {
+        if (selectedTheme == currentTheme)
+        {
+            message = "Theme is already set to " + availableThemes.First(t => t.Id == selectedTheme).Name;
+            return;
+        }
+
+        isSaving = true;
+        message = "";
+        StateHasChanged();
+
+        try
+        {
+            await ThemeService.SetThemeAsync(selectedTheme);
+            currentTheme = selectedTheme;
+            message = $"Theme saved successfully! Refreshing page...";
+            StateHasChanged();
+
+            // Refresh the page to apply the new theme
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            message = $"Error saving theme: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+}

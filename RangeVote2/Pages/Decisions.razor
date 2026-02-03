@@ -2,7 +2,7 @@
 @page "/ballots"
 @attribute [Authorize]
 
-<PageTitle>My Pastures - range.vote</PageTitle>
+<PageTitle>@ThemeService.GetText("my_places") - range.vote</PageTitle>
 
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
@@ -10,15 +10,16 @@
 @inject IRangeVoteRepository Repository
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IThemeService ThemeService
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>🌾 My Pastures</h1>
-    <a href="/decision/create" class="btn btn-primary">+ Plant a Pasture</a>
+    <h1>@ThemeService.GetText("my_places")</h1>
+    <a href="/decision/create" class="btn btn-primary">+ @ThemeService.GetText("create_action")</a>
 </div>
 
 @if (isLoading)
 {
-    <p><em>Loading the pastures...</em></p>
+    <p><em>@ThemeService.GetText("loading")</em></p>
 }
 else if (!myDecisions.Any() && !sharedDecisions.Any() && !groupDecisions.Any())
 {

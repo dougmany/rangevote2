@@ -1,30 +1,32 @@
 @using RangeVote2.Data
 @inject NavigationManager NavigationManager
+@inject IThemeService ThemeService
 
 <nav class="top-nav">
     <div class="nav-container">
         <a href="/" class="nav-brand">
-            🐄 range.vote
+            @ThemeService.GetEmoji("animal") range.vote
         </a>
 
         <AuthorizeView>
             <Authorized>
                 <div class="nav-links">
-                    <a href="/decisions" class="nav-link">My Pastures</a>
-                    <a href="/discover" class="nav-link">The Open Range</a>
-                    <a href="/groups" class="nav-link">My Herds</a>
+                    <a href="/decisions" class="nav-link">@ThemeService.GetText("my_places")</a>
+                    <a href="/discover" class="nav-link">@ThemeService.GetText("open_area")</a>
+                    <a href="/groups" class="nav-link">@ThemeService.GetText("my_groups")</a>
                     <a href="/import" class="nav-link">📥 Import</a>
+                    <a href="/settings" class="nav-link">⚙️ Settings</a>
                 </div>
                 <div class="nav-user">
                     <span class="nav-user-name">@context.User.Identity?.Name</span>
-                    <a href="/logout" class="btn btn-sm btn-secondary">Leave Barn</a>
+                    <a href="/logout" class="btn btn-sm btn-secondary">@ThemeService.GetText("leave_action")</a>
                 </div>
             </Authorized>
             <NotAuthorized>
                 <div class="nav-links"></div>
                 <div class="nav-user">
-                    <a href="/login" class="btn btn-sm btn-secondary">Enter Barn</a>
-                    <a href="/register" class="btn btn-sm btn-primary">Join the Herd</a>
+                    <a href="/login" class="btn btn-sm btn-secondary">@ThemeService.GetText("enter_action")</a>
+                    <a href="/register" class="btn btn-sm btn-primary">@ThemeService.GetText("join_action")</a>
                 </div>
             </NotAuthorized>
         </AuthorizeView>

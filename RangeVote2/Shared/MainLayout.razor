@@ -1,8 +1,9 @@
 @inherits LayoutComponentBase
+@inject IThemeService ThemeService
 
 <PageTitle>range.vote</PageTitle>
 
-<div class="page">
+<div class="page @themeClass">
     <NavMenu />
 
     <main>
@@ -11,3 +12,14 @@
         </article>
     </main>
 </div>
+
+@code {
+    private string themeClass = "theme-cow";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var theme = await ThemeService.GetCurrentThemeAsync();
+        themeClass = $"theme-{theme}";
+        StateHasChanged();
+    }
+}

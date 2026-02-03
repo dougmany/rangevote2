@@ -9,6 +9,7 @@ namespace RangeVote2.Data
         public Guid? OrganizationId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public string PreferredTheme { get; set; } = "cow";
     }
 
     public class Organization

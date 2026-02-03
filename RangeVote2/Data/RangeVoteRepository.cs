@@ -86,6 +86,10 @@ namespace RangeVote2.Data
         // ========== IMPORT METHODS ==========
         Task<ImportResult> ImportBallotsFromJsonAsync(Guid userId, string? jsonFilePath = null, List<string>? electionIdsToImport = null);
         Task<Dictionary<string, int>> PreviewBallotsFromJsonAsync(string? jsonFilePath = null);
+
+        // ========== THEME PREFERENCE METHODS ==========
+        Task UpdateUserThemeAsync(Guid userId, string theme);
+        Task<string> GetUserThemeAsync(Guid userId);
     }
 
     public class RangeVoteRepository : IRangeVoteRepository
@@ -1798,6 +1802,30 @@ namespace RangeVote2.Data
             }
 
             return result;
+        }
+
+        // ========== THEME PREFERENCE IMPLEMENTATIONS ==========
+
+        public async Task UpdateUserThemeAsync(Guid userId, string theme)
+        {
+            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            await connection.ExecuteAsync(
+                "UPDATE users SET PreferredTheme = @Theme WHERE Id = @UserId",
+                new { Theme = theme, UserId = userId.ToString() }
+            );
+        }
+
+        public async Task<string> GetUserThemeAsync(Guid userId)
+        {
+            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            var theme = await connection.QueryFirstOrDefaultAsync<string>(
+                "SELECT PreferredTheme FROM users WHERE Id = @UserId",
+                new { UserId = userId.ToString() }
+            );
+
+            return theme ?? "cow"; // Default to cow theme if not set
         }
     }
 

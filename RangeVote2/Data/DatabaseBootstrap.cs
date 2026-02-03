@@ -96,6 +96,14 @@ namespace RangeVote2.Data
           connection.Execute("ALTER TABLE organizations ADD COLUMN Description TEXT;");
         }
 
+        // Add PreferredTheme column to users if it doesn't exist
+        var userColumns = connection.Query<dynamic>("PRAGMA table_info(users);");
+        var hasPreferredTheme = userColumns.Any(c => c.name == "PreferredTheme");
+        if (!hasPreferredTheme)
+        {
+          connection.Execute("ALTER TABLE users ADD COLUMN PreferredTheme VARCHAR(20) NOT NULL DEFAULT 'cow';");
+        }
+
         // Update candidate table to add OrganizationId if it doesn't exist
         var candidateColumns = connection.Query<dynamic>("PRAGMA table_info(candidate);");
         var hasOrgId = candidateColumns.Any(c => c.name == "OrganizationId");

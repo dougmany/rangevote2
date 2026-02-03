@@ -3,17 +3,18 @@
 @inject IAuthenticationService AuthService
 @inject CustomAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject IThemeService ThemeService
 
-<PageTitle>Enter the Barn - range.vote</PageTitle>
+<PageTitle>@ThemeService.GetText("enter_action") - range.vote</PageTitle>
 
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <h1 class="auth-brand">🐄 range.vote</h1>
-            <p class="auth-tagline">Where the herd gathers to decide</p>
+            <h1 class="auth-brand">@ThemeService.GetEmoji("animal") range.vote</h1>
+            <p class="auth-tagline">@ThemeService.GetText("tagline")</p>
         </div>
 
-        <h2>Enter the Barn</h2>
+        <h2>@ThemeService.GetText("enter_action")</h2>
 
         <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
             <DataAnnotationsValidator />
@@ -41,17 +42,17 @@
             <div class="form-check mb-3">
                 <InputCheckbox id="rememberMe" class="form-check-input" @bind-Value="loginModel.RememberMe" />
                 <label class="form-check-label" for="rememberMe">
-                    Remember this cow
+                    Remember me
                 </label>
             </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
-                @(isLoading ? "Opening the barn door..." : "Enter the Barn 🚪")
+                @(isLoading ? "Logging in..." : ThemeService.GetText("enter_action"))
             </button>
         </EditForm>
 
         <div class="auth-footer">
-            <p>New to the herd? <a href="/register">Join us!</a></p>
+            <p>New here? <a href="/register">@ThemeService.GetText("join_action")</a></p>
         </div>
     </div>
 </div>
@@ -76,7 +77,7 @@
 
             if (user == null)
             {
-                errorMessage = "Invalid email or password. Are you sure you're from this herd?";
+                errorMessage = "Invalid email or password. Please try again.";
                 isLoading = false;
                 return;
             }

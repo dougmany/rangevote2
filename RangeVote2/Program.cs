@@ -39,6 +39,9 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IShareService, ShareService>();
 builder.Services.AddHostedService<BallotClosureService>();
 
+// Add theme service
+builder.Services.AddScoped<IThemeService, ThemeService>();
+
 var app = builder.Build();
 
 app.UsePathBase(builder.Configuration["FolderName"]);

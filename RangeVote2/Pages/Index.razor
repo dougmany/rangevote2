@@ -1,22 +1,24 @@
 @page "/"
+@using RangeVote2.Data
 @inject NavigationManager Navigation
+@inject IThemeService ThemeService
 
-<PageTitle>Range.Vote - Where the Herd Gathers to Decide</PageTitle>
+<PageTitle>Range.Vote - @ThemeService.GetText("tagline")</PageTitle>
 
 <div class="hero">
-    <h1>🐄 Where the Herd Gathers to Decide</h1>
-    <p>Range.Vote helps your herd chew on the options together. Everyone grazes on each choice, and the tastiest patch wins. Range voting for the open range!</p>
+    <h1>@ThemeService.GetEmoji("animal") @ThemeService.GetText("tagline")</h1>
+    <p>Range.Vote helps your @ThemeService.GetText("group") make better decisions together. Everyone rates each choice, giving every option a fair chance. Democratic range @ThemeService.GetText("action_voting")!</p>
     <AuthorizeView>
         <Authorized>
             <div class="hero-actions">
-                <a href="/decisions" class="btn btn-primary btn-lg">My Pastures 🌾</a>
-                <a href="/discover" class="btn btn-secondary btn-lg">Roam the Range 🏔️</a>
+                <a href="/decisions" class="btn btn-primary btn-lg">@ThemeService.GetText("my_places")</a>
+                <a href="/discover" class="btn btn-secondary btn-lg">@ThemeService.GetText("open_area")</a>
             </div>
         </Authorized>
         <NotAuthorized>
             <div class="hero-actions">
-                <a href="/register" class="btn btn-primary btn-lg">Join the Herd 🐮</a>
-                <a href="/login" class="btn btn-secondary btn-lg">Enter the Barn</a>
+                <a href="/register" class="btn btn-primary btn-lg">@ThemeService.GetText("join_action") @ThemeService.GetEmoji("animal")</a>
+                <a href="/login" class="btn btn-secondary btn-lg">@ThemeService.GetText("enter_action")</a>
             </div>
         </NotAuthorized>
     </AuthorizeView>
@@ -26,27 +28,27 @@
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
-                <div class="empty-state-icon">🌾</div>
-                <h3>Graze the Options</h3>
-                <p class="text-muted">Rate each patch of grass from 0 to 10. The greener, the better! Like a cow at an all-you-can-eat pasture buffet.</p>
+                <div class="empty-state-icon">📊</div>
+                <h3>Rate the Options</h3>
+                <p class="text-muted">Score each choice from 0 to 10 based on your preference. Give every option a fair rating to help find the best collective decision.</p>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
-                <div class="empty-state-icon">💩</div>
-                <h3>The Digest</h3>
-                <p class="text-muted">After the herd has grazed, see what comes out the other end! The highest-rated option is what the herd has truly digested.</p>
+                <div class="empty-state-icon">📈</div>
+                <h3>@ThemeService.GetText("results")</h3>
+                <p class="text-muted">After everyone votes, see the aggregated results. The highest-rated option represents the @ThemeService.GetText("group_possessive") collective preference.</p>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
-                <div class="empty-state-icon">🐄</div>
-                <h3>Herd Together</h3>
-                <p class="text-muted">Create herds, invite your fellow cows, and graze together. Open range or private pasture - your moo-ve.</p>
+                <div class="empty-state-icon">@ThemeService.GetEmoji("animal")</div>
+                <h3>@ThemeService.GetText("group") Together</h3>
+                <p class="text-muted">Create @ThemeService.GetText("my_groups").ToLower(), invite @ThemeService.GetText("members"), and decide together. Public or private - your choice.</p>
             </div>
         </div>
     </div>

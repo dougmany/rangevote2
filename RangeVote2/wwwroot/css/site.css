@@ -77,6 +77,222 @@
 }
 
 /* ============================================
+   Theme Variations
+   ============================================ */
+
+/* Cow/Cattle Theme (default) */
+.theme-cow {
+    /* Pasture colors */
+    --color-grass: #22c55e;
+    --color-grass-dark: #16a34a;
+    --color-grass-light: #dcfce7;
+    --color-pasture: #f0fdf4;
+
+    /* Cow colors */
+    --color-cow-black: #1c1917;
+    --color-cow-white: #fafaf9;
+    --color-cow-spot: #292524;
+
+    /* Barn colors */
+    --color-barn-red: #dc2626;
+    --color-barn-red-dark: #b91c1c;
+    --color-barn-wood: #78350f;
+
+    /* Earth tones */
+    --color-dirt: #a16207;
+    --color-mud: #713f12;
+    --color-hay: #fbbf24;
+
+    /* Primary = Grass green */
+    --color-primary: var(--color-grass);
+    --color-primary-hover: var(--color-grass-dark);
+    --color-primary-light: var(--color-grass-light);
+
+    /* Neutrals - earthy */
+    --color-bg: #fffbeb;
+    --color-bg-subtle: #fef3c7;
+    --color-bg-muted: #fde68a;
+    --color-border: #d6d3d1;
+    --color-border-light: #e7e5e4;
+    --color-text: #292524;
+    --color-text-muted: #57534e;
+    --color-text-light: #78716c;
+
+    /* Status colors */
+    --color-success: #22c55e;
+    --color-success-bg: #f0fdf4;
+    --color-warning: #f59e0b;
+    --color-warning-bg: #fffbeb;
+    --color-danger: #dc2626;
+    --color-danger-bg: #fef2f2;
+    --color-info: #0ea5e9;
+    --color-info-bg: #f0f9ff;
+
+    /* Poop brown for results */
+    --color-poop: #78350f;
+    --color-poop-light: #fef3c7;
+}
+
+/* Deer Theme - Forest/Woodland */
+.theme-deer {
+    /* Forest colors */
+    --color-grass: #8b4513;
+    --color-grass-dark: #704010;
+    --color-grass-light: #deb887;
+    --color-pasture: #faf8f0;
+
+    /* Deer colors */
+    --color-cow-black: #3d2817;
+    --color-cow-white: #f5f5dc;
+    --color-cow-spot: #4a3728;
+
+    /* Forest tones */
+    --color-barn-red: #2e8b57;
+    --color-barn-red-dark: #25724a;
+    --color-barn-wood: #654321;
+
+    /* Earth tones */
+    --color-dirt: #8b7355;
+    --color-mud: #6b5640;
+    --color-hay: #daa520;
+
+    /* Primary = Forest brown */
+    --color-primary: #8b4513;
+    --color-primary-hover: #704010;
+    --color-primary-light: #f5deb3;
+
+    /* Neutrals - earthy woodland */
+    --color-bg: #faf8f0;
+    --color-bg-subtle: #f5f5dc;
+    --color-bg-muted: #e8e4d0;
+    --color-border: #c9c5b3;
+    --color-border-light: #d9d5c3;
+    --color-text: #3d2817;
+    --color-text-muted: #5a4a3a;
+    --color-text-light: #7a6a5a;
+
+    /* Status colors */
+    --color-success: #6b8e23;
+    --color-success-bg: #f0f8f0;
+    --color-warning: #cd853f;
+    --color-warning-bg: #faf5f0;
+    --color-danger: #a0522d;
+    --color-danger-bg: #f8f0f0;
+    --color-info: #5f9ea0;
+    --color-info-bg: #f0f8f8;
+
+    /* Brown for results */
+    --color-poop: #654321;
+    --color-poop-light: #f5f5dc;
+}
+
+/* Bison Theme - American Rangeland */
+.theme-bison {
+    /* Prairie colors */
+    --color-grass: #cd853f;
+    --color-grass-dark: #b8581a;
+    --color-grass-light: #f4d5a6;
+    --color-pasture: #fffaf0;
+
+    /* Bison colors */
+    --color-cow-black: #3e2723;
+    --color-cow-white: #faebd7;
+    --color-cow-spot: #5d4037;
+
+    /* Mesa tones */
+    --color-barn-red: #d2691e;
+    --color-barn-red-dark: #b8581a;
+    --color-barn-wood: #8b4513;
+
+    /* Earth tones */
+    --color-dirt: #a0826d;
+    --color-mud: #8b7355;
+    --color-hay: #daa520;
+
+    /* Primary = Prairie tan */
+    --color-primary: #cd853f;
+    --color-primary-hover: #b8581a;
+    --color-primary-light: #ffefd5;
+
+    /* Neutrals - sandy prairie */
+    --color-bg: #fffaf0;
+    --color-bg-subtle: #faebd7;
+    --color-bg-muted: #f5deb3;
+    --color-border: #d2b48c;
+    --color-border-light: #deb887;
+    --color-text: #3e2723;
+    --color-text-muted: #5d4037;
+    --color-text-light: #795548;
+
+    /* Status colors */
+    --color-success: #8fbc8f;
+    --color-success-bg: #f0faf0;
+    --color-warning: #cd853f;
+    --color-warning-bg: #fffaf0;
+    --color-danger: #c04000;
+    --color-danger-bg: #fef5f0;
+    --color-info: #5f9ea0;
+    --color-info-bg: #f0f8f8;
+
+    /* Tan for results */
+    --color-poop: #8b7355;
+    --color-poop-light: #faebd7;
+}
+
+/* Plain/Ballot Theme - Professional */
+.theme-plain {
+    /* Professional colors */
+    --color-grass: #3182ce;
+    --color-grass-dark: #2563eb;
+    --color-grass-light: #dbeafe;
+    --color-pasture: #f8fafc;
+
+    /* Neutral colors */
+    --color-cow-black: #1e293b;
+    --color-cow-white: #ffffff;
+    --color-cow-spot: #334155;
+
+    /* Professional tones */
+    --color-barn-red: #4a5568;
+    --color-barn-red-dark: #2d3748;
+    --color-barn-wood: #718096;
+
+    /* Muted tones */
+    --color-dirt: #64748b;
+    --color-mud: #475569;
+    --color-hay: #f59e0b;
+
+    /* Primary = Professional blue */
+    --color-primary: #3182ce;
+    --color-primary-hover: #2563eb;
+    --color-primary-light: #e0f2fe;
+
+    /* Neutrals - clean professional */
+    --color-bg: #ffffff;
+    --color-bg-subtle: #f8fafc;
+    --color-bg-muted: #e2e8f0;
+    --color-border: #cbd5e1;
+    --color-border-light: #e2e8f0;
+    --color-text: #1e293b;
+    --color-text-muted: #64748b;
+    --color-text-light: #94a3b8;
+
+    /* Status colors */
+    --color-success: #10b981;
+    --color-success-bg: #f0fdf4;
+    --color-warning: #f59e0b;
+    --color-warning-bg: #fffbeb;
+    --color-danger: #ef4444;
+    --color-danger-bg: #fef2f2;
+    --color-info: #0ea5e9;
+    --color-info-bg: #f0f9ff;
+
+    /* Gray for results */
+    --color-poop: #718096;
+    --color-poop-light: #f8fafc;
+}
+
+/* ============================================
    Base Styles
    ============================================ */
 
@@ -84,9 +300,6 @@ html, body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     color: var(--color-text);
     background-color: var(--color-bg-subtle);
-    background-image:
-        radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
