@@ -1,5 +1,5 @@
 using Dapper;
-using Microsoft.Data.Sqlite;
+using Npgsql;
 using Newtonsoft.Json;
 using System.Globalization;
 
@@ -105,14 +105,14 @@ namespace RangeVote2.Data
         public async Task<Ballot> GetBallotAsync(Guid guid, string electionId)
         {
             Console.WriteLine($"[DEBUG GetBallotAsync] Loading ballot for GUID: {guid}, Election: {electionId}");
-            
-            using var connection = new SqliteConnection(_config.DatabaseName);
+
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var candidates = await connection.QueryAsync<DBCandidate>(
-                @"SELECT * FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                new { guid = guid, electionID = electionId }
+                @"SELECT * FROM candidate WHERE guid = @guid AND electionid = @electionID;",
+                new { guid = guid.ToString(), electionID = electionId }
             );
-            
+
             Console.WriteLine($"[DEBUG GetBallotAsync] Found {candidates.Count()} candidate records");
 
             var ballot = new Ballot
@@ -127,7 +127,7 @@ namespace RangeVote2.Data
                     Image_link = c.Image_link
                 }).ToArray()
             };
-            
+
             if (ballot.Candidates.Length > 0)
             {
                 Console.WriteLine($"[DEBUG GetBallotAsync] Returning ballot with {ballot.Candidates.Length} candidates");
@@ -137,12 +137,13 @@ namespace RangeVote2.Data
             Console.WriteLine($"[DEBUG GetBallotAsync] No existing ballot found, returning default candidates");
             return new Ballot { Id = guid, Candidates = DefaultCandidates(electionId) };
         }
+
         public async Task<List<DBCandidate>> GetBallotsAsync(string electionId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var ballots = await connection.QueryAsync<DBCandidate>(
-                @"SELECT * FROM candidate WHERE ElectionID = @electionID;",
+                @"SELECT * FROM candidate WHERE electionid = @electionID;",
                 new { electionID = electionId }
             );
 
@@ -153,21 +154,20 @@ namespace RangeVote2.Data
         {
             Console.WriteLine($"[DEBUG PutBallotAsync] Saving ballot for GUID: {ballot.Id}, Election: {electionId}");
             Console.WriteLine($"[DEBUG PutBallotAsync] Number of candidates: {ballot.Candidates?.Length ?? 0}");
-            
-            using var connection = new SqliteConnection(_config.DatabaseName);
-            
-            // Debug: Check what's in DB before delete
+
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
             var beforeDelete = await connection.QueryAsync<dynamic>(
-                @"SELECT GUID, Name, Score FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                new { guid = ballot.Id, electionID = electionId }
+                @"SELECT guid, name, score FROM candidate WHERE guid = @guid AND electionid = @electionID;",
+                new { guid = ballot.Id.ToString(), electionID = electionId }
             );
             Console.WriteLine($"[DEBUG PutBallotAsync] Records before delete: {beforeDelete.Count()}");
-            
+
             await connection.ExecuteAsync(
-                @"DELETE FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                new { guid = ballot.Id, electionID = electionId }
+                @"DELETE FROM candidate WHERE guid = @guid AND electionid = @electionID;",
+                new { guid = ballot.Id.ToString(), electionID = electionId }
             );
-            
+
             Console.WriteLine($"[DEBUG PutBallotAsync] Deleted existing records");
 
             if (ballot.Candidates is not null)
@@ -182,34 +182,23 @@ namespace RangeVote2.Data
                     Image_link = c.Image_link
                 });
 
-                String query = "INSERT INTO candidate (Guid, Name, Score, ElectionID, Description, Image_link) Values (@Guid, @Name, @Score, @ElectionID, @Description, @Image_link)";
+                string query = "INSERT INTO candidate (guid, name, score, electionid, description, image_link) VALUES (@Guid, @Name, @Score, @ElectionID, @Description, @Image_link)";
                 await connection.ExecuteAsync(query, data);
-                
+
                 Console.WriteLine($"[DEBUG PutBallotAsync] Inserted {ballot.Candidates.Length} candidate records");
-                
-                // Debug: Verify what was saved
-                var afterInsert = await connection.QueryAsync<dynamic>(
-                    @"SELECT GUID, Name, Score FROM candidate WHERE Guid = @guid AND ElectionID = @electionID;",
-                    new { guid = ballot.Id, electionID = electionId }
-                );
-                Console.WriteLine($"[DEBUG PutBallotAsync] Records after insert: {afterInsert.Count()}");
-                foreach (var record in afterInsert)
-                {
-                    Console.WriteLine($"[DEBUG PutBallotAsync] Saved - GUID: {record.GUID}, Name: {record.Name}, Score: {record.Score}");
-                }
             }
         }
 
         public async Task<Ballot> GetResultAsync(string electionId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var candidates = await connection.QueryAsync<Candidate>(
-                    @"SELECT Name, CAST(ROUND(SUM(Score)/COUNT(DISTINCT Guid))AS SIGNED) AS Score 
+                    @"SELECT name, CAST(ROUND(SUM(score)/COUNT(DISTINCT guid)) AS INTEGER) AS Score
                         FROM candidate
-                        WHERE ElectionID = @electionID
-                        GROUP BY Name 
-                        ORDER BY SUM(Score) DESC;",
+                        WHERE electionid = @electionID
+                        GROUP BY name
+                        ORDER BY SUM(score) DESC;",
                     new { electionID = electionId }
                 );
             var ballot = new Ballot
@@ -227,48 +216,28 @@ namespace RangeVote2.Data
         public async Task<List<VoteCount>> GetVotersAsync()
         {
             var voters = new List<VoteCount>();
-            
+
             if (_config.ElectionIds is not null && _config.ElectionIds.Length > 0)
             {
                 try
                 {
-                    using var connection = new SqliteConnection(_config.DatabaseName);
-                    
-                    // Debug: See all GUIDs in the database
+                    using var connection = new NpgsqlConnection(_config.DatabaseName);
+
                     var allCandidates = await connection.QueryAsync<dynamic>(
-                        @"SELECT GUID, ElectionID, Name, Score FROM candidate;"
+                        @"SELECT guid, electionid, name, score FROM candidate;"
                     );
                     Console.WriteLine($"[DEBUG GetVotersAsync] Total candidate records: {allCandidates.Count()}");
-                    foreach (var c in allCandidates)
-                    {
-                        Console.WriteLine($"[DEBUG] GUID: {c.GUID}, Election: {c.ElectionID}, Name: {c.Name}, Score: {c.Score}");
-                    }
-                    
-                    // Debug: See distinct GUIDs
-                    var distinctGuids = await connection.QueryAsync<dynamic>(
-                        @"SELECT DISTINCT GUID, ElectionID FROM candidate;"
-                    );
-                    Console.WriteLine($"[DEBUG GetVotersAsync] Distinct GUID/Election combos: {distinctGuids.Count()}");
-                    foreach (var g in distinctGuids)
-                    {
-                        Console.WriteLine($"[DEBUG] Distinct GUID: {g.GUID}, Election: {g.ElectionID}");
-                    }
-                    
-                    var query = @"SELECT ElectionID, COUNT(1) Voters FROM ( SELECT ElectionID, COUNT(GUID) FROM candidate GROUP BY GUID) GROUP BY ElectionID;";
+
+                    var query = @"SELECT electionid AS ElectionID, COUNT(1) AS Voters FROM ( SELECT electionid, COUNT(guid) FROM candidate GROUP BY guid, electionid) t GROUP BY electionid;";
                     var results = await connection.QueryAsync<VoteCount>(query);
                     Console.WriteLine($"[DEBUG GetVotersAsync] Query results count: {results.Count()}");
-                    foreach (var r in results)
-                    {
-                        Console.WriteLine($"[DEBUG GetVotersAsync] ElectionID: {r.ElectionID}, Voters: {r.Voters}");
-                    }
-                    
+
                     voters = results.Where(r => _config.ElectionIds.Contains(r.ElectionID)).ToList();
                     Console.WriteLine($"[DEBUG GetVotersAsync] Filtered voters count: {voters.Count}");
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[DEBUG GetVotersAsync] Exception: {ex.Message}");
-                    // If database query fails, return empty list rather than crashing
                     return new List<VoteCount>();
                 }
             }
@@ -297,26 +266,21 @@ namespace RangeVote2.Data
 
         public async Task<bool> UserCanAccessElection(Guid userId, string electionId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Get user's organization
             var user = await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Id = @Id",
+                "SELECT * FROM users WHERE id = @Id",
                 new { Id = userId.ToString() }
             );
 
             if (user == null)
                 return false;
 
-            // For now, all users in an organization can access all elections
-            // In the future, you can add election-level permissions
             return true;
         }
 
         public async Task<List<string>> GetBallotsForOrganizationAsync(Guid? organizationId)
         {
-            // For now, return all configured ballots
-            // In the future, filter by organization
             return GetBallots();
         }
 
@@ -325,7 +289,7 @@ namespace RangeVote2.Data
         // Ballot CRUD
         public async Task<BallotMetadata> CreateBallotAsync(CreateBallotModel model, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var ballotId = Guid.NewGuid();
             var now = DateTime.UtcNow;
@@ -347,7 +311,7 @@ namespace RangeVote2.Data
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO ballots (Id, Name, Description, OwnerId, OrganizationId, Status, CreatedAt, CloseDate, IsOpen, IsPublic, CandidateCount, VoteCount)
+                @"INSERT INTO ballots (id, name, description, ownerid, organizationid, status, createdat, closedate, isopen, ispublic, candidatecount, votecount)
                   VALUES (@Id, @Name, @Description, @OwnerId, @OrganizationId, @Status, @CreatedAt, @CloseDate, @IsOpen, @IsPublic, @CandidateCount, @VoteCount)",
                 new
                 {
@@ -360,7 +324,7 @@ namespace RangeVote2.Data
                     ballot.CreatedAt,
                     ballot.CloseDate,
                     ballot.IsOpen,
-                    IsPublic = ballot.IsPublic ? 1 : 0,
+                    ballot.IsPublic,
                     ballot.CandidateCount,
                     ballot.VoteCount
                 }
@@ -372,7 +336,7 @@ namespace RangeVote2.Data
                 var candidateId = Guid.NewGuid();
 
                 await connection.ExecuteAsync(
-                    @"INSERT INTO ballot_candidates (Id, BallotId, Name, Description, ImageLink, CreatedAt)
+                    @"INSERT INTO ballot_candidates (id, ballotid, name, description, imagelink, createdat)
                       VALUES (@Id, @BallotId, @Name, @Description, @ImageLink, @CreatedAt)",
                     new
                     {
@@ -391,43 +355,46 @@ namespace RangeVote2.Data
 
         public async Task<BallotMetadata?> GetBallotMetadataAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT * FROM ballots WHERE Id = @Id",
+                "SELECT * FROM ballots WHERE id = @Id",
                 new { Id = ballotId.ToString() }
             );
 
             if (result == null) return null;
 
+            return MapBallotMetadata(result);
+        }
+
+        private BallotMetadata MapBallotMetadata(dynamic r)
+        {
             return new BallotMetadata
             {
-                Id = Guid.Parse(result.Id),
-                Name = result.Name,
-                Description = result.Description,
-                OwnerId = Guid.Parse(result.OwnerId),
-                OrganizationId = result.OrganizationId != null ? Guid.Parse(result.OrganizationId) : null,
-                Status = Enum.Parse<BallotStatus>(result.Status),
-                CreatedAt = DateTime.Parse(result.CreatedAt),
-                OpenDate = result.OpenDate != null ? DateTime.Parse(result.OpenDate) : null,
-                CloseDate = result.CloseDate != null ? DateTime.Parse(result.CloseDate) : null,
-                IsOpen = result.IsOpen == 1,
-                IsPublic = result.IsPublic == 1,
-                CandidateCount = Convert.ToInt32(result.CandidateCount),
-                VoteCount = Convert.ToInt32(result.VoteCount)
+                Id = Guid.Parse((string)r.id),
+                Name = (string)r.name,
+                Description = (string?)r.description,
+                OwnerId = Guid.Parse((string)r.ownerid),
+                OrganizationId = r.organizationid != null ? Guid.Parse((string)r.organizationid) : null,
+                Status = Enum.Parse<BallotStatus>((string)r.status),
+                CreatedAt = (DateTime)r.createdat,
+                OpenDate = (DateTime?)r.opendate,
+                CloseDate = (DateTime?)r.closedate,
+                IsOpen = (bool)r.isopen,
+                IsPublic = (bool)r.ispublic,
+                CandidateCount = (int)r.candidatecount,
+                VoteCount = (int)r.votecount
             };
         }
 
         public async Task<List<BallotListItem>> GetBallotsForUserAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Get user's organizations
             var orgs = await GetUserOrganizationsAsync(userId);
             var orgIdStrings = orgs.Select(o => o.ToString()).ToList();
             var userIdString = userId.ToString();
 
-            // Build query - handle empty org list separately to avoid Dapper IN clause issues
             string sql;
             object parameters;
 
@@ -435,54 +402,56 @@ namespace RangeVote2.Data
             {
                 sql = @"
                     SELECT DISTINCT
-                        b.Id,
-                        b.Name,
-                        b.Description,
-                        b.Status,
-                        b.OwnerId,
-                        b.OrganizationId,
-                        b.CandidateCount,
-                        b.VoteCount,
-                        b.CloseDate,
-                        o.Name as OrganizationName,
-                        bp.Permission as MyPermission,
-                        CASE WHEN b.OwnerId = @UserId THEN 1 ELSE 0 END as IsOwner,
-                        CASE WHEN EXISTS(SELECT 1 FROM votes WHERE BallotId = b.Id AND UserId = @UserId) THEN 1 ELSE 0 END as HasVoted
+                        b.id,
+                        b.name,
+                        b.description,
+                        b.status,
+                        b.ownerid,
+                        b.organizationid,
+                        b.candidatecount,
+                        b.votecount,
+                        b.closedate,
+                        b.createdat,
+                        o.name as organizationname,
+                        bp.permission as mypermission,
+                        CASE WHEN b.ownerid = @UserId THEN TRUE ELSE FALSE END as isowner,
+                        CASE WHEN EXISTS(SELECT 1 FROM votes WHERE ballotid = b.id AND userid = @UserId) THEN TRUE ELSE FALSE END as hasvoted
                     FROM ballots b
-                    LEFT JOIN organizations o ON b.OrganizationId = o.Id
-                    LEFT JOIN ballot_permissions bp ON b.Id = bp.BallotId AND bp.UserId = @UserId
+                    LEFT JOIN organizations o ON b.organizationid = o.id
+                    LEFT JOIN ballot_permissions bp ON b.id = bp.ballotid AND bp.userid = @UserId
                     WHERE
-                        b.OwnerId = @UserId
-                        OR bp.UserId = @UserId
-                        OR b.OrganizationId IN @OrgIds
-                    ORDER BY b.CreatedAt DESC
+                        b.ownerid = @UserId
+                        OR bp.userid = @UserId
+                        OR b.organizationid = ANY(@OrgIds)
+                    ORDER BY b.createdat DESC
                 ";
-                parameters = new { UserId = userIdString, OrgIds = orgIdStrings };
+                parameters = new { UserId = userIdString, OrgIds = orgIdStrings.ToArray() };
             }
             else
             {
                 sql = @"
                     SELECT DISTINCT
-                        b.Id,
-                        b.Name,
-                        b.Description,
-                        b.Status,
-                        b.OwnerId,
-                        b.OrganizationId,
-                        b.CandidateCount,
-                        b.VoteCount,
-                        b.CloseDate,
-                        o.Name as OrganizationName,
-                        bp.Permission as MyPermission,
-                        CASE WHEN b.OwnerId = @UserId THEN 1 ELSE 0 END as IsOwner,
-                        CASE WHEN EXISTS(SELECT 1 FROM votes WHERE BallotId = b.Id AND UserId = @UserId) THEN 1 ELSE 0 END as HasVoted
+                        b.id,
+                        b.name,
+                        b.description,
+                        b.status,
+                        b.ownerid,
+                        b.organizationid,
+                        b.candidatecount,
+                        b.votecount,
+                        b.closedate,
+                        b.createdat,
+                        o.name as organizationname,
+                        bp.permission as mypermission,
+                        CASE WHEN b.ownerid = @UserId THEN TRUE ELSE FALSE END as isowner,
+                        CASE WHEN EXISTS(SELECT 1 FROM votes WHERE ballotid = b.id AND userid = @UserId) THEN TRUE ELSE FALSE END as hasvoted
                     FROM ballots b
-                    LEFT JOIN organizations o ON b.OrganizationId = o.Id
-                    LEFT JOIN ballot_permissions bp ON b.Id = bp.BallotId AND bp.UserId = @UserId
+                    LEFT JOIN organizations o ON b.organizationid = o.id
+                    LEFT JOIN ballot_permissions bp ON b.id = bp.ballotid AND bp.userid = @UserId
                     WHERE
-                        b.OwnerId = @UserId
-                        OR bp.UserId = @UserId
-                    ORDER BY b.CreatedAt DESC
+                        b.ownerid = @UserId
+                        OR bp.userid = @UserId
+                    ORDER BY b.createdat DESC
                 ";
                 parameters = new { UserId = userIdString };
             }
@@ -494,26 +463,24 @@ namespace RangeVote2.Data
             {
                 var item = new BallotListItem
                 {
-                    Id = Guid.Parse((string)r.Id),
-                    Name = (string)r.Name,
-                    Description = (string?)r.Description,
-                    Status = Enum.Parse<BallotStatus>((string)r.Status),
-                    IsOwner = Convert.ToInt64(r.IsOwner) == 1,
-                    IsOrganizationBallot = r.OrganizationId != null,
-                    OrganizationName = (string?)r.OrganizationName,
-                    CandidateCount = Convert.ToInt32(r.CandidateCount),
-                    VoteCount = Convert.ToInt32(r.VoteCount),
-                    CloseDate = r.CloseDate != null ? DateTime.Parse((string)r.CloseDate) : null,
-                    HasVoted = Convert.ToInt64(r.HasVoted) == 1
+                    Id = Guid.Parse((string)r.id),
+                    Name = (string)r.name,
+                    Description = (string?)r.description,
+                    Status = Enum.Parse<BallotStatus>((string)r.status),
+                    IsOwner = (bool)r.isowner,
+                    IsOrganizationBallot = r.organizationid != null,
+                    OrganizationName = (string?)r.organizationname,
+                    CandidateCount = (int)r.candidatecount,
+                    VoteCount = (int)r.votecount,
+                    CloseDate = (DateTime?)r.closedate,
+                    HasVoted = (bool)r.hasvoted
                 };
 
-                // Parse permission
-                if (r.MyPermission != null)
+                if (r.mypermission != null)
                 {
-                    item.MyPermission = Enum.Parse<UserPermission>(r.MyPermission);
+                    item.MyPermission = Enum.Parse<UserPermission>((string)r.mypermission);
                 }
 
-                // Calculate permissions
                 var permission = await GetUserPermissionAsync(item.Id, userId);
                 item.CanEdit = permission >= UserPermission.Editor;
                 item.CanVote = permission >= UserPermission.Voter && item.Status == BallotStatus.Open;
@@ -526,13 +493,13 @@ namespace RangeVote2.Data
 
         public async Task UpdateBallotAsync(BallotMetadata ballot)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
                 @"UPDATE ballots
-                  SET Name = @Name, Description = @Description, CloseDate = @CloseDate,
-                      Status = @Status, IsOpen = @IsOpen, IsPublic = @IsPublic
-                  WHERE Id = @Id",
+                  SET name = @Name, description = @Description, closedate = @CloseDate,
+                      status = @Status, isopen = @IsOpen, ispublic = @IsPublic
+                  WHERE id = @Id",
                 new
                 {
                     Id = ballot.Id.ToString(),
@@ -541,16 +508,15 @@ namespace RangeVote2.Data
                     ballot.CloseDate,
                     Status = ballot.Status.ToString(),
                     ballot.IsOpen,
-                    IsPublic = ballot.IsPublic ? 1 : 0
+                    ballot.IsPublic
                 }
             );
         }
 
         public async Task DeleteBallotAsync(Guid ballotId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Verify user is owner
             var ballot = await GetBallotMetadataAsync(ballotId);
             if (ballot == null || ballot.OwnerId != userId)
             {
@@ -558,7 +524,7 @@ namespace RangeVote2.Data
             }
 
             await connection.ExecuteAsync(
-                "DELETE FROM ballots WHERE Id = @Id",
+                "DELETE FROM ballots WHERE id = @Id",
                 new { Id = ballotId.ToString() }
             );
         }
@@ -566,10 +532,10 @@ namespace RangeVote2.Data
         // Candidate management
         public async Task<List<BallotCandidate>> GetCandidatesAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var candidates = await connection.QueryAsync<BallotCandidate>(
-                "SELECT * FROM ballot_candidates WHERE BallotId = @BallotId ORDER BY RANDOM()",
+                "SELECT * FROM ballot_candidates WHERE ballotid = @BallotId ORDER BY RANDOM()",
                 new { BallotId = ballotId.ToString() }
             );
 
@@ -578,7 +544,7 @@ namespace RangeVote2.Data
 
         public async Task<BallotCandidate> AddCandidateAsync(Guid ballotId, CreateCandidateModel model)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var candidate = new BallotCandidate
             {
@@ -591,7 +557,7 @@ namespace RangeVote2.Data
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO ballot_candidates (Id, BallotId, Name, Description, ImageLink, CreatedAt)
+                @"INSERT INTO ballot_candidates (id, ballotid, name, description, imagelink, createdat)
                   VALUES (@Id, @BallotId, @Name, @Description, @ImageLink, @CreatedAt)",
                 new
                 {
@@ -604,9 +570,8 @@ namespace RangeVote2.Data
                 }
             );
 
-            // Update candidate count
             await connection.ExecuteAsync(
-                "UPDATE ballots SET CandidateCount = CandidateCount + 1 WHERE Id = @BallotId",
+                "UPDATE ballots SET candidatecount = candidatecount + 1 WHERE id = @BallotId",
                 new { BallotId = ballotId.ToString() }
             );
 
@@ -615,12 +580,12 @@ namespace RangeVote2.Data
 
         public async Task UpdateCandidateAsync(BallotCandidate candidate)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
                 @"UPDATE ballot_candidates
-                  SET Name = @Name, Description = @Description, ImageLink = @ImageLink
-                  WHERE Id = @Id",
+                  SET name = @Name, description = @Description, imagelink = @ImageLink
+                  WHERE id = @Id",
                 new
                 {
                     Id = candidate.Id.ToString(),
@@ -633,24 +598,22 @@ namespace RangeVote2.Data
 
         public async Task DeleteCandidateAsync(Guid candidateId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Get ballot ID before deleting
             var candidate = await connection.QueryFirstOrDefaultAsync<BallotCandidate>(
-                "SELECT * FROM ballot_candidates WHERE Id = @Id",
+                "SELECT * FROM ballot_candidates WHERE id = @Id",
                 new { Id = candidateId.ToString() }
             );
 
             if (candidate != null)
             {
                 await connection.ExecuteAsync(
-                    "DELETE FROM ballot_candidates WHERE Id = @Id",
+                    "DELETE FROM ballot_candidates WHERE id = @Id",
                     new { Id = candidateId.ToString() }
                 );
 
-                // Update candidate count
                 await connection.ExecuteAsync(
-                    "UPDATE ballots SET CandidateCount = CandidateCount - 1 WHERE Id = @BallotId",
+                    "UPDATE ballots SET candidatecount = candidatecount - 1 WHERE id = @BallotId",
                     new { BallotId = candidate.BallotId.ToString() }
                 );
             }
@@ -659,10 +622,10 @@ namespace RangeVote2.Data
         // Voting
         public async Task<List<Vote>> GetUserVotesAsync(Guid ballotId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var votes = await connection.QueryAsync<Vote>(
-                "SELECT * FROM votes WHERE BallotId = @BallotId AND UserId = @UserId",
+                "SELECT * FROM votes WHERE ballotid = @BallotId AND userid = @UserId",
                 new { BallotId = ballotId.ToString(), UserId = userId.ToString() }
             );
 
@@ -671,7 +634,7 @@ namespace RangeVote2.Data
 
         public async Task SaveVotesAsync(Guid ballotId, Guid userId, Dictionary<Guid, int> candidateScores)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
             var now = DateTime.UtcNow;
 
             foreach (var kvp in candidateScores)
@@ -679,23 +642,22 @@ namespace RangeVote2.Data
                 var candidateId = kvp.Key;
                 var score = kvp.Value;
 
-                // Upsert vote
                 var existing = await connection.QueryFirstOrDefaultAsync<Vote>(
-                    "SELECT * FROM votes WHERE BallotId = @BallotId AND CandidateId = @CandidateId AND UserId = @UserId",
+                    "SELECT * FROM votes WHERE ballotid = @BallotId AND candidateid = @CandidateId AND userid = @UserId",
                     new { BallotId = ballotId.ToString(), CandidateId = candidateId.ToString(), UserId = userId.ToString() }
                 );
 
                 if (existing != null)
                 {
                     await connection.ExecuteAsync(
-                        "UPDATE votes SET Score = @Score, UpdatedAt = @UpdatedAt WHERE Id = @Id",
+                        "UPDATE votes SET score = @Score, updatedat = @UpdatedAt WHERE id = @Id",
                         new { Score = score, UpdatedAt = now, Id = existing.Id.ToString() }
                     );
                 }
                 else
                 {
                     await connection.ExecuteAsync(
-                        @"INSERT INTO votes (Id, BallotId, CandidateId, UserId, Score, CreatedAt, UpdatedAt)
+                        @"INSERT INTO votes (id, ballotid, candidateid, userid, score, createdat, updatedat)
                           VALUES (@Id, @BallotId, @CandidateId, @UserId, @Score, @CreatedAt, @UpdatedAt)",
                         new
                         {
@@ -711,34 +673,33 @@ namespace RangeVote2.Data
                 }
             }
 
-            // Update vote count (distinct users who voted)
             var voteCount = await connection.QueryFirstAsync<int>(
-                "SELECT COUNT(DISTINCT UserId) FROM votes WHERE BallotId = @BallotId",
+                "SELECT COUNT(DISTINCT userid) FROM votes WHERE ballotid = @BallotId",
                 new { BallotId = ballotId.ToString() }
             );
 
             await connection.ExecuteAsync(
-                "UPDATE ballots SET VoteCount = @VoteCount WHERE Id = @BallotId",
+                "UPDATE ballots SET votecount = @VoteCount WHERE id = @BallotId",
                 new { VoteCount = voteCount, BallotId = ballotId.ToString() }
             );
         }
 
         public async Task<Dictionary<Guid, double>> GetResultsAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var results = await connection.QueryAsync<dynamic>(
-                @"SELECT CandidateId, AVG(CAST(Score AS REAL)) as AvgScore
+                @"SELECT candidateid, AVG(CAST(score AS REAL)) as avgscore
                   FROM votes
-                  WHERE BallotId = @BallotId
-                  GROUP BY CandidateId",
+                  WHERE ballotid = @BallotId
+                  GROUP BY candidateid",
                 new { BallotId = ballotId.ToString() }
             );
 
             var dict = new Dictionary<Guid, double>();
             foreach (var r in results)
             {
-                dict[Guid.Parse(r.CandidateId)] = (double)r.AvgScore;
+                dict[Guid.Parse((string)r.candidateid)] = (double)r.avgscore;
             }
 
             return dict;
@@ -747,9 +708,8 @@ namespace RangeVote2.Data
         // Share Links
         public async Task<BallotShareLink> CreateShareLinkAsync(Guid ballotId, ShareLinkPermission permission, Guid creatorId, DateTime? expiresAt = null)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Generate secure token (will be done by ShareService, but fallback here)
             var tokenBytes = new byte[32];
             using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
             {
@@ -774,7 +734,7 @@ namespace RangeVote2.Data
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO ballot_share_links (Id, BallotId, ShareToken, Permission, CreatedAt, CreatedBy, ExpiresAt, IsActive, UseCount)
+                @"INSERT INTO ballot_share_links (id, ballotid, sharetoken, permission, createdat, createdby, expiresat, isactive, usecount)
                   VALUES (@Id, @BallotId, @ShareToken, @Permission, @CreatedAt, @CreatedBy, @ExpiresAt, @IsActive, @UseCount)",
                 new
                 {
@@ -785,7 +745,7 @@ namespace RangeVote2.Data
                     CreatedAt = shareLink.CreatedAt,
                     CreatedBy = shareLink.CreatedBy.ToString(),
                     ExpiresAt = shareLink.ExpiresAt,
-                    IsActive = shareLink.IsActive ? 1 : 0,
+                    IsActive = shareLink.IsActive,
                     UseCount = shareLink.UseCount
                 }
             );
@@ -795,10 +755,10 @@ namespace RangeVote2.Data
 
         public async Task<List<BallotShareLink>> GetShareLinksAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var links = await connection.QueryAsync<dynamic>(
-                "SELECT * FROM ballot_share_links WHERE BallotId = @BallotId",
+                "SELECT * FROM ballot_share_links WHERE ballotid = @BallotId",
                 new { BallotId = ballotId.ToString() }
             );
 
@@ -807,15 +767,15 @@ namespace RangeVote2.Data
             {
                 result.Add(new BallotShareLink
                 {
-                    Id = Guid.Parse(link.Id),
-                    BallotId = Guid.Parse(link.BallotId),
-                    ShareToken = link.ShareToken,
-                    Permission = Enum.Parse<ShareLinkPermission>(link.Permission),
-                    CreatedAt = DateTime.Parse(link.CreatedAt),
-                    CreatedBy = Guid.Parse(link.CreatedBy),
-                    ExpiresAt = link.ExpiresAt != null ? DateTime.Parse(link.ExpiresAt) : null,
-                    IsActive = link.IsActive == 1,
-                    UseCount = link.UseCount
+                    Id = Guid.Parse((string)link.id),
+                    BallotId = Guid.Parse((string)link.ballotid),
+                    ShareToken = (string)link.sharetoken,
+                    Permission = Enum.Parse<ShareLinkPermission>((string)link.permission),
+                    CreatedAt = (DateTime)link.createdat,
+                    CreatedBy = Guid.Parse((string)link.createdby),
+                    ExpiresAt = (DateTime?)link.expiresat,
+                    IsActive = (bool)link.isactive,
+                    UseCount = (int)link.usecount
                 });
             }
 
@@ -824,10 +784,10 @@ namespace RangeVote2.Data
 
         public async Task<BallotShareLink?> GetShareLinkByTokenAsync(string token)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var link = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT * FROM ballot_share_links WHERE ShareToken = @Token",
+                "SELECT * FROM ballot_share_links WHERE sharetoken = @Token",
                 new { Token = token }
             );
 
@@ -835,34 +795,34 @@ namespace RangeVote2.Data
 
             return new BallotShareLink
             {
-                Id = Guid.Parse(link.Id),
-                BallotId = Guid.Parse(link.BallotId),
-                ShareToken = link.ShareToken,
-                Permission = Enum.Parse<ShareLinkPermission>(link.Permission),
-                CreatedAt = DateTime.Parse(link.CreatedAt),
-                CreatedBy = Guid.Parse(link.CreatedBy),
-                ExpiresAt = link.ExpiresAt != null ? DateTime.Parse(link.ExpiresAt) : null,
-                IsActive = link.IsActive == 1,
-                UseCount = link.UseCount
+                Id = Guid.Parse((string)link.id),
+                BallotId = Guid.Parse((string)link.ballotid),
+                ShareToken = (string)link.sharetoken,
+                Permission = Enum.Parse<ShareLinkPermission>((string)link.permission),
+                CreatedAt = (DateTime)link.createdat,
+                CreatedBy = Guid.Parse((string)link.createdby),
+                ExpiresAt = (DateTime?)link.expiresat,
+                IsActive = (bool)link.isactive,
+                UseCount = (int)link.usecount
             };
         }
 
         public async Task DeactivateShareLinkAsync(Guid shareLinkId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE ballot_share_links SET IsActive = 0 WHERE Id = @Id",
+                "UPDATE ballot_share_links SET isactive = FALSE WHERE id = @Id",
                 new { Id = shareLinkId.ToString() }
             );
         }
 
         public async Task IncrementShareLinkUseCountAsync(Guid shareLinkId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE ballot_share_links SET UseCount = UseCount + 1 WHERE Id = @Id",
+                "UPDATE ballot_share_links SET usecount = usecount + 1 WHERE id = @Id",
                 new { Id = shareLinkId.ToString() }
             );
         }
@@ -870,11 +830,10 @@ namespace RangeVote2.Data
         // User Permissions
         public async Task<BallotPermission> InviteUserAsync(Guid ballotId, string email, UserPermission permission, Guid inviterId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Check if user exists
             var user = await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Email = @Email",
+                "SELECT * FROM users WHERE email = @Email",
                 new { Email = email }
             );
 
@@ -891,7 +850,7 @@ namespace RangeVote2.Data
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO ballot_permissions (Id, BallotId, UserId, InvitedEmail, Permission, CreatedAt, CreatedBy, AcceptedAt)
+                @"INSERT INTO ballot_permissions (id, ballotid, userid, invitedemail, permission, createdat, createdby, acceptedat)
                   VALUES (@Id, @BallotId, @UserId, @InvitedEmail, @Permission, @CreatedAt, @CreatedBy, @AcceptedAt)",
                 new
                 {
@@ -911,10 +870,10 @@ namespace RangeVote2.Data
 
         public async Task<List<BallotPermission>> GetBallotPermissionsAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var perms = await connection.QueryAsync<dynamic>(
-                "SELECT * FROM ballot_permissions WHERE BallotId = @BallotId",
+                "SELECT * FROM ballot_permissions WHERE ballotid = @BallotId",
                 new { BallotId = ballotId.ToString() }
             );
 
@@ -923,14 +882,14 @@ namespace RangeVote2.Data
             {
                 result.Add(new BallotPermission
                 {
-                    Id = Guid.Parse(p.Id),
-                    BallotId = Guid.Parse(p.BallotId),
-                    UserId = p.UserId != null ? Guid.Parse(p.UserId) : null,
-                    InvitedEmail = p.InvitedEmail,
-                    Permission = Enum.Parse<UserPermission>(p.Permission),
-                    CreatedAt = DateTime.Parse(p.CreatedAt),
-                    CreatedBy = Guid.Parse(p.CreatedBy),
-                    AcceptedAt = p.AcceptedAt != null ? DateTime.Parse(p.AcceptedAt) : null
+                    Id = Guid.Parse((string)p.id),
+                    BallotId = Guid.Parse((string)p.ballotid),
+                    UserId = p.userid != null ? Guid.Parse((string)p.userid) : null,
+                    InvitedEmail = (string?)p.invitedemail,
+                    Permission = Enum.Parse<UserPermission>((string)p.permission),
+                    CreatedAt = (DateTime)p.createdat,
+                    CreatedBy = Guid.Parse((string)p.createdby),
+                    AcceptedAt = (DateTime?)p.acceptedat
                 });
             }
 
@@ -939,20 +898,20 @@ namespace RangeVote2.Data
 
         public async Task UpdatePermissionAsync(Guid permissionId, UserPermission newPermission)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE ballot_permissions SET Permission = @Permission WHERE Id = @Id",
+                "UPDATE ballot_permissions SET permission = @Permission WHERE id = @Id",
                 new { Permission = newPermission.ToString(), Id = permissionId.ToString() }
             );
         }
 
         public async Task RevokePermissionAsync(Guid permissionId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "DELETE FROM ballot_permissions WHERE Id = @Id",
+                "DELETE FROM ballot_permissions WHERE id = @Id",
                 new { Id = permissionId.ToString() }
             );
         }
@@ -960,37 +919,34 @@ namespace RangeVote2.Data
         // Permission checking
         public async Task<UserPermission?> GetUserPermissionAsync(Guid ballotId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // 1. Check if user is owner
             var ballot = await GetBallotMetadataAsync(ballotId);
             if (ballot == null) return null;
 
             if (ballot.OwnerId == userId)
                 return UserPermission.Admin;
 
-            // 2. Check explicit permissions
             var permission = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT Permission FROM ballot_permissions WHERE BallotId = @BallotId AND UserId = @UserId",
+                "SELECT permission FROM ballot_permissions WHERE ballotid = @BallotId AND userid = @UserId",
                 new { BallotId = ballotId.ToString(), UserId = userId.ToString() }
             );
 
             if (permission != null)
             {
-                return Enum.Parse<UserPermission>(permission.Permission);
+                return Enum.Parse<UserPermission>((string)permission.permission);
             }
 
-            // 3. Check organization membership (implicit access)
             if (ballot.OrganizationId.HasValue)
             {
                 var orgs = await GetUserOrganizationsAsync(userId);
                 if (orgs.Contains(ballot.OrganizationId.Value))
                 {
-                    return UserPermission.Voter; // Default org member permission
+                    return UserPermission.Voter;
                 }
             }
 
-            return null; // No access
+            return null;
         }
 
         public async Task<bool> CanUserAccessBallotAsync(Guid ballotId, Guid userId)
@@ -1020,47 +976,47 @@ namespace RangeVote2.Data
         // Lifecycle
         public async Task CloseBallotAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE ballots SET Status = @Status, IsOpen = 0 WHERE Id = @Id",
+                "UPDATE ballots SET status = @Status, isopen = FALSE WHERE id = @Id",
                 new { Status = BallotStatus.Closed.ToString(), Id = ballotId.ToString() }
             );
         }
 
         public async Task OpenBallotAsync(Guid ballotId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE ballots SET Status = @Status, IsOpen = 1 WHERE Id = @Id",
+                "UPDATE ballots SET status = @Status, isopen = TRUE WHERE id = @Id",
                 new { Status = BallotStatus.Open.ToString(), Id = ballotId.ToString() }
             );
         }
 
         public async Task<List<BallotMetadata>> GetBallotsToAutoCloseAsync(DateTime now)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            var ballots = await connection.QueryAsync<BallotMetadata>(
+            var ballots = await connection.QueryAsync<dynamic>(
                 @"SELECT * FROM ballots
-                  WHERE Status = @Status
-                    AND IsOpen = 1
-                    AND CloseDate IS NOT NULL
-                    AND CloseDate <= @Now",
+                  WHERE status = @Status
+                    AND isopen = TRUE
+                    AND closedate IS NOT NULL
+                    AND closedate <= @Now",
                 new { Status = BallotStatus.Open.ToString(), Now = now }
             );
 
-            return ballots.ToList();
+            return ballots.Select(r => MapBallotMetadata(r)).Cast<BallotMetadata>().ToList();
         }
 
         // Helper Methods
         public async Task<List<Guid>> GetUserOrganizationsAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var orgIds = await connection.QueryAsync<string>(
-                "SELECT OrganizationId FROM organization_members WHERE UserId = @UserId",
+                "SELECT organizationid FROM organization_members WHERE userid = @UserId",
                 new { UserId = userId.ToString() }
             );
 
@@ -1071,10 +1027,10 @@ namespace RangeVote2.Data
 
         public async Task<Organization?> GetOrganizationAsync(Guid orgId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var org = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT * FROM organizations WHERE Id = @Id",
+                "SELECT * FROM organizations WHERE id = @Id",
                 new { Id = orgId.ToString() }
             );
 
@@ -1082,35 +1038,35 @@ namespace RangeVote2.Data
 
             return new Organization
             {
-                Id = Guid.Parse(org.Id),
-                Name = org.Name,
-                Description = org.Description,
-                OwnerId = Guid.Parse(org.OwnerId),
-                IsPublic = org.IsPublic == 1,
-                CreatedAt = DateTime.Parse(org.CreatedAt)
+                Id = Guid.Parse((string)org.id),
+                Name = (string)org.name,
+                Description = (string?)org.description,
+                OwnerId = Guid.Parse((string)org.ownerid),
+                IsPublic = (bool)org.ispublic,
+                CreatedAt = (DateTime)org.createdat
             };
         }
 
         public async Task<List<OrganizationListItem>> GetOrganizationsForUserAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
             var userIdString = userId.ToString();
 
             var results = await connection.QueryAsync<dynamic>(
                 @"SELECT
-                    o.Id,
-                    o.Name,
-                    o.Description,
-                    o.IsPublic,
-                    o.OwnerId,
-                    o.CreatedAt,
-                    om.Role,
-                    (SELECT COUNT(*) FROM organization_members WHERE OrganizationId = o.Id) as MemberCount,
-                    (SELECT COUNT(*) FROM ballots WHERE OrganizationId = o.Id) as BallotCount
+                    o.id,
+                    o.name,
+                    o.description,
+                    o.ispublic,
+                    o.ownerid,
+                    o.createdat,
+                    om.role,
+                    (SELECT COUNT(*) FROM organization_members WHERE organizationid = o.id) as membercount,
+                    (SELECT COUNT(*) FROM ballots WHERE organizationid = o.id) as ballotcount
                 FROM organizations o
-                INNER JOIN organization_members om ON o.Id = om.OrganizationId
-                WHERE om.UserId = @UserId
-                ORDER BY o.Name",
+                INNER JOIN organization_members om ON o.id = om.organizationid
+                WHERE om.userid = @UserId
+                ORDER BY o.name",
                 new { UserId = userIdString }
             );
 
@@ -1119,16 +1075,16 @@ namespace RangeVote2.Data
             {
                 items.Add(new OrganizationListItem
                 {
-                    Id = Guid.Parse(r.Id),
-                    Name = r.Name,
-                    Description = r.Description,
-                    IsPublic = r.IsPublic == 1,
-                    IsOwner = r.OwnerId == userIdString,
+                    Id = Guid.Parse((string)r.id),
+                    Name = (string)r.name,
+                    Description = (string?)r.description,
+                    IsPublic = (bool)r.ispublic,
+                    IsOwner = (string)r.ownerid == userIdString,
                     IsMember = true,
-                    MyRole = r.Role,
-                    MemberCount = Convert.ToInt32(r.MemberCount),
-                    BallotCount = Convert.ToInt32(r.BallotCount),
-                    CreatedAt = DateTime.Parse(r.CreatedAt)
+                    MyRole = (string)r.role,
+                    MemberCount = (int)(long)r.membercount,
+                    BallotCount = (int)(long)r.ballotcount,
+                    CreatedAt = (DateTime)r.createdat
                 });
             }
 
@@ -1137,43 +1093,42 @@ namespace RangeVote2.Data
 
         public async Task<List<OrganizationListItem>> GetPublicOrganizationsAsync(Guid? excludeUserId = null)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             string sql;
             object parameters;
 
             if (excludeUserId.HasValue)
             {
-                // Get public orgs the user is NOT a member of
                 sql = @"SELECT
-                        o.Id,
-                        o.Name,
-                        o.Description,
-                        o.IsPublic,
-                        o.OwnerId,
-                        o.CreatedAt,
-                        (SELECT COUNT(*) FROM organization_members WHERE OrganizationId = o.Id) as MemberCount,
-                        (SELECT COUNT(*) FROM ballots WHERE OrganizationId = o.Id) as BallotCount
+                        o.id,
+                        o.name,
+                        o.description,
+                        o.ispublic,
+                        o.ownerid,
+                        o.createdat,
+                        (SELECT COUNT(*) FROM organization_members WHERE organizationid = o.id) as membercount,
+                        (SELECT COUNT(*) FROM ballots WHERE organizationid = o.id) as ballotcount
                     FROM organizations o
-                    WHERE o.IsPublic = 1
-                    AND NOT EXISTS (SELECT 1 FROM organization_members om WHERE om.OrganizationId = o.Id AND om.UserId = @UserId)
-                    ORDER BY o.Name";
+                    WHERE o.ispublic = TRUE
+                    AND NOT EXISTS (SELECT 1 FROM organization_members om WHERE om.organizationid = o.id AND om.userid = @UserId)
+                    ORDER BY o.name";
                 parameters = new { UserId = excludeUserId.Value.ToString() };
             }
             else
             {
                 sql = @"SELECT
-                        o.Id,
-                        o.Name,
-                        o.Description,
-                        o.IsPublic,
-                        o.OwnerId,
-                        o.CreatedAt,
-                        (SELECT COUNT(*) FROM organization_members WHERE OrganizationId = o.Id) as MemberCount,
-                        (SELECT COUNT(*) FROM ballots WHERE OrganizationId = o.Id) as BallotCount
+                        o.id,
+                        o.name,
+                        o.description,
+                        o.ispublic,
+                        o.ownerid,
+                        o.createdat,
+                        (SELECT COUNT(*) FROM organization_members WHERE organizationid = o.id) as membercount,
+                        (SELECT COUNT(*) FROM ballots WHERE organizationid = o.id) as ballotcount
                     FROM organizations o
-                    WHERE o.IsPublic = 1
-                    ORDER BY o.Name";
+                    WHERE o.ispublic = TRUE
+                    ORDER BY o.name";
                 parameters = new { };
             }
 
@@ -1184,16 +1139,16 @@ namespace RangeVote2.Data
             {
                 items.Add(new OrganizationListItem
                 {
-                    Id = Guid.Parse(r.Id),
-                    Name = r.Name,
-                    Description = r.Description,
+                    Id = Guid.Parse((string)r.id),
+                    Name = (string)r.name,
+                    Description = (string?)r.description,
                     IsPublic = true,
                     IsOwner = false,
                     IsMember = false,
                     MyRole = null,
-                    MemberCount = Convert.ToInt32(r.MemberCount),
-                    BallotCount = Convert.ToInt32(r.BallotCount),
-                    CreatedAt = DateTime.Parse(r.CreatedAt)
+                    MemberCount = (int)(long)r.membercount,
+                    BallotCount = (int)(long)r.ballotcount,
+                    CreatedAt = (DateTime)r.createdat
                 });
             }
 
@@ -1202,7 +1157,7 @@ namespace RangeVote2.Data
 
         public async Task<Organization> CreateOrganizationAsync(string name, string? description, bool isPublic, Guid ownerId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var org = new Organization
             {
@@ -1215,7 +1170,7 @@ namespace RangeVote2.Data
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO organizations (Id, Name, Description, OwnerId, IsPublic, CreatedAt)
+                @"INSERT INTO organizations (id, name, description, ownerid, ispublic, createdat)
                   VALUES (@Id, @Name, @Description, @OwnerId, @IsPublic, @CreatedAt)",
                 new
                 {
@@ -1223,14 +1178,13 @@ namespace RangeVote2.Data
                     org.Name,
                     org.Description,
                     OwnerId = org.OwnerId.ToString(),
-                    IsPublic = org.IsPublic ? 1 : 0,
+                    org.IsPublic,
                     org.CreatedAt
                 }
             );
 
-            // Add owner as a member with Owner role
             await connection.ExecuteAsync(
-                @"INSERT INTO organization_members (Id, OrganizationId, UserId, Role, JoinedAt)
+                @"INSERT INTO organization_members (id, organizationid, userid, role, joinedat)
                   VALUES (@Id, @OrganizationId, @UserId, @Role, @JoinedAt)",
                 new
                 {
@@ -1247,74 +1201,63 @@ namespace RangeVote2.Data
 
         public async Task UpdateOrganizationAsync(Organization org)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
                 @"UPDATE organizations
-                  SET Name = @Name, Description = @Description, IsPublic = @IsPublic
-                  WHERE Id = @Id",
+                  SET name = @Name, description = @Description, ispublic = @IsPublic
+                  WHERE id = @Id",
                 new
                 {
                     Id = org.Id.ToString(),
                     org.Name,
                     org.Description,
-                    IsPublic = org.IsPublic ? 1 : 0
+                    org.IsPublic
                 }
             );
         }
 
         public async Task DeleteOrganizationAsync(Guid orgId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Verify user is owner
             var org = await GetOrganizationAsync(orgId);
             if (org == null || org.OwnerId != userId)
             {
                 throw new UnauthorizedAccessException("Only the organization owner can delete the organization");
             }
 
-            // Delete organization members first
             await connection.ExecuteAsync(
-                "DELETE FROM organization_members WHERE OrganizationId = @OrgId",
+                "DELETE FROM organization_members WHERE organizationid = @OrgId",
                 new { OrgId = orgId.ToString() }
             );
 
-            // Delete the organization
             await connection.ExecuteAsync(
-                "DELETE FROM organizations WHERE Id = @Id",
+                "DELETE FROM organizations WHERE id = @Id",
                 new { Id = orgId.ToString() }
             );
         }
 
         public async Task JoinOrganizationAsync(Guid orgId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Check if org is public
             var org = await GetOrganizationAsync(orgId);
             if (org == null)
-            {
                 throw new InvalidOperationException("Organization not found");
-            }
             if (!org.IsPublic)
-            {
                 throw new UnauthorizedAccessException("Cannot join a private organization");
-            }
 
-            // Check if already a member
             var existing = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT Id FROM organization_members WHERE OrganizationId = @OrgId AND UserId = @UserId",
+                "SELECT id FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
                 new { OrgId = orgId.ToString(), UserId = userId.ToString() }
             );
 
             if (existing != null)
-            {
                 throw new InvalidOperationException("Already a member of this organization");
-            }
 
             await connection.ExecuteAsync(
-                @"INSERT INTO organization_members (Id, OrganizationId, UserId, Role, JoinedAt)
+                @"INSERT INTO organization_members (id, organizationid, userid, role, joinedat)
                   VALUES (@Id, @OrganizationId, @UserId, @Role, @JoinedAt)",
                 new
                 {
@@ -1329,47 +1272,42 @@ namespace RangeVote2.Data
 
         public async Task LeaveOrganizationAsync(Guid orgId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Check if user is the owner
             var org = await GetOrganizationAsync(orgId);
             if (org == null)
-            {
                 throw new InvalidOperationException("Organization not found");
-            }
             if (org.OwnerId == userId)
-            {
                 throw new InvalidOperationException("Owner cannot leave the organization. Transfer ownership or delete the organization instead.");
-            }
 
             await connection.ExecuteAsync(
-                "DELETE FROM organization_members WHERE OrganizationId = @OrgId AND UserId = @UserId",
+                "DELETE FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
                 new { OrgId = orgId.ToString(), UserId = userId.ToString() }
             );
         }
 
         public async Task<List<OrganizationMemberListItem>> GetOrganizationMembersAsync(Guid orgId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var results = await connection.QueryAsync<dynamic>(
                 @"SELECT
-                    om.Id as MemberId,
-                    om.UserId,
-                    om.Role,
-                    om.JoinedAt,
-                    u.DisplayName,
-                    u.Email
+                    om.id as memberid,
+                    om.userid,
+                    om.role,
+                    om.joinedat,
+                    u.displayname,
+                    u.email
                 FROM organization_members om
-                INNER JOIN users u ON om.UserId = u.Id
-                WHERE om.OrganizationId = @OrgId
+                INNER JOIN users u ON om.userid = u.id
+                WHERE om.organizationid = @OrgId
                 ORDER BY
-                    CASE om.Role
+                    CASE om.role
                         WHEN 'Owner' THEN 1
                         WHEN 'Admin' THEN 2
                         ELSE 3
                     END,
-                    u.DisplayName",
+                    u.displayname",
                 new { OrgId = orgId.ToString() }
             );
 
@@ -1378,12 +1316,12 @@ namespace RangeVote2.Data
             {
                 items.Add(new OrganizationMemberListItem
                 {
-                    MemberId = Guid.Parse(r.MemberId),
-                    UserId = Guid.Parse(r.UserId),
-                    DisplayName = r.DisplayName,
-                    Email = r.Email,
-                    Role = r.Role,
-                    JoinedAt = DateTime.Parse(r.JoinedAt)
+                    MemberId = Guid.Parse((string)r.memberid),
+                    UserId = Guid.Parse((string)r.userid),
+                    DisplayName = (string)r.displayname,
+                    Email = (string)r.email,
+                    Role = (string)r.role,
+                    JoinedAt = (DateTime)r.joinedat
                 });
             }
 
@@ -1392,10 +1330,10 @@ namespace RangeVote2.Data
 
         public async Task<bool> IsUserMemberOfOrganizationAsync(Guid orgId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var count = await connection.QueryFirstOrDefaultAsync<int>(
-                "SELECT COUNT(*) FROM organization_members WHERE OrganizationId = @OrgId AND UserId = @UserId",
+                "SELECT COUNT(*) FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
                 new { OrgId = orgId.ToString(), UserId = userId.ToString() }
             );
 
@@ -1404,10 +1342,10 @@ namespace RangeVote2.Data
 
         public async Task<string?> GetUserRoleInOrganizationAsync(Guid orgId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var role = await connection.QueryFirstOrDefaultAsync<string>(
-                "SELECT Role FROM organization_members WHERE OrganizationId = @OrgId AND UserId = @UserId",
+                "SELECT role FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
                 new { OrgId = orgId.ToString(), UserId = userId.ToString() }
             );
 
@@ -1418,31 +1356,30 @@ namespace RangeVote2.Data
 
         public async Task<List<PublicBallotListItem>> GetPublicBallotsAsync(string? searchTerm, Guid? organizationId, bool? closingSoon, Guid excludeUserId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
             var userIdString = excludeUserId.ToString();
             var now = DateTime.UtcNow;
             var sevenDaysFromNow = now.AddDays(7);
 
-            // Build dynamic SQL based on filters
             var sql = @"SELECT
-                    b.Id,
-                    b.Name,
-                    b.Description,
-                    b.OrganizationId,
-                    b.CandidateCount,
-                    b.VoteCount,
-                    b.CloseDate,
-                    b.CreatedAt,
-                    o.Name as OrganizationName
+                    b.id,
+                    b.name,
+                    b.description,
+                    b.organizationid,
+                    b.candidatecount,
+                    b.votecount,
+                    b.closedate,
+                    b.createdat,
+                    o.name as organizationname
                 FROM ballots b
-                LEFT JOIN organizations o ON b.OrganizationId = o.Id
-                WHERE b.IsPublic = 1
-                AND b.Status = 'Open'
-                AND b.IsOpen = 1
-                AND b.OwnerId != @UserId
+                LEFT JOIN organizations o ON b.organizationid = o.id
+                WHERE b.ispublic = TRUE
+                AND b.status = 'Open'
+                AND b.isopen = TRUE
+                AND b.ownerid != @UserId
                 AND NOT EXISTS (
                     SELECT 1 FROM ballot_permissions bp
-                    WHERE bp.BallotId = b.Id AND bp.UserId = @UserId
+                    WHERE bp.ballotid = b.id AND bp.userid = @UserId
                 )";
 
             var parameters = new DynamicParameters();
@@ -1450,54 +1387,47 @@ namespace RangeVote2.Data
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                sql += " AND (b.Name LIKE @SearchTerm OR b.Description LIKE @SearchTerm)";
+                sql += " AND (b.name ILIKE @SearchTerm OR b.description ILIKE @SearchTerm)";
                 parameters.Add("SearchTerm", $"%{searchTerm}%");
             }
 
             if (organizationId.HasValue)
             {
-                sql += " AND b.OrganizationId = @OrganizationId";
+                sql += " AND b.organizationid = @OrganizationId";
                 parameters.Add("OrganizationId", organizationId.Value.ToString());
             }
 
             if (closingSoon == true)
             {
-                sql += " AND b.CloseDate IS NOT NULL AND b.CloseDate <= @SevenDaysFromNow AND b.CloseDate > @Now";
+                sql += " AND b.closedate IS NOT NULL AND b.closedate <= @SevenDaysFromNow AND b.closedate > @Now";
                 parameters.Add("SevenDaysFromNow", sevenDaysFromNow);
                 parameters.Add("Now", now);
             }
 
-            sql += " ORDER BY b.CreatedAt DESC";
+            sql += " ORDER BY b.createdat DESC";
 
             var results = await connection.QueryAsync<dynamic>(sql, parameters);
 
             var items = new List<PublicBallotListItem>();
             foreach (var r in results)
             {
-                object closeDateValue = r.CloseDate;
-                var closeDate = closeDateValue == null || closeDateValue is DBNull ? (DateTime?)null : DateTime.Parse(closeDateValue.ToString()!);
-
-                object orgIdValue = r.OrganizationId;
-                Guid? organizationIdParsed = orgIdValue == null || orgIdValue is DBNull ? null : Guid.Parse(orgIdValue.ToString()!);
-
-                object orgNameValue = r.OrganizationName;
-                string? organizationName = orgNameValue == null || orgNameValue is DBNull ? null : orgNameValue.ToString();
-
-                object descValue = r.Description;
-                string? description = descValue == null || descValue is DBNull ? null : descValue.ToString();
+                DateTime? closeDate = (DateTime?)r.closedate;
+                Guid? orgIdParsed = r.organizationid != null ? Guid.Parse((string)r.organizationid) : null;
+                string? orgName = (string?)r.organizationname;
+                string? description = (string?)r.description;
 
                 items.Add(new PublicBallotListItem
                 {
-                    Id = Guid.Parse(r.Id),
-                    Name = r.Name,
+                    Id = Guid.Parse((string)r.id),
+                    Name = (string)r.name,
                     Description = description,
-                    OrganizationId = organizationIdParsed,
-                    OrganizationName = organizationName,
-                    CandidateCount = Convert.ToInt32(r.CandidateCount),
-                    VoteCount = Convert.ToInt32(r.VoteCount),
+                    OrganizationId = orgIdParsed,
+                    OrganizationName = orgName,
+                    CandidateCount = (int)r.candidatecount,
+                    VoteCount = (int)r.votecount,
                     CloseDate = closeDate,
                     IsClosingSoon = closeDate.HasValue && closeDate.Value <= sevenDaysFromNow && closeDate.Value > now,
-                    CreatedAt = DateTime.Parse(r.CreatedAt)
+                    CreatedAt = (DateTime)r.createdat
                 });
             }
 
@@ -1506,37 +1436,26 @@ namespace RangeVote2.Data
 
         public async Task JoinBallotAsync(Guid ballotId, Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-            // Verify ballot exists and is public
             var ballot = await GetBallotMetadataAsync(ballotId);
             if (ballot == null)
-            {
                 throw new InvalidOperationException("Ballot not found");
-            }
             if (!ballot.IsPublic)
-            {
                 throw new UnauthorizedAccessException("Cannot join a non-public ballot");
-            }
             if (ballot.Status != BallotStatus.Open)
-            {
                 throw new InvalidOperationException("Cannot join a closed ballot");
-            }
 
-            // Check if already has permission
             var existing = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                "SELECT Id FROM ballot_permissions WHERE BallotId = @BallotId AND UserId = @UserId",
+                "SELECT id FROM ballot_permissions WHERE ballotid = @BallotId AND userid = @UserId",
                 new { BallotId = ballotId.ToString(), UserId = userId.ToString() }
             );
 
             if (existing != null)
-            {
                 throw new InvalidOperationException("Already joined this ballot");
-            }
 
-            // Add user as Voter
             await connection.ExecuteAsync(
-                @"INSERT INTO ballot_permissions (Id, BallotId, UserId, Permission, CreatedAt, CreatedBy, AcceptedAt)
+                @"INSERT INTO ballot_permissions (id, ballotid, userid, permission, createdat, createdby, acceptedat)
                   VALUES (@Id, @BallotId, @UserId, @Permission, @CreatedAt, @CreatedBy, @AcceptedAt)",
                 new
                 {
@@ -1545,7 +1464,7 @@ namespace RangeVote2.Data
                     UserId = userId.ToString(),
                     Permission = UserPermission.Voter.ToString(),
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = userId.ToString(), // Self-joined
+                    CreatedBy = userId.ToString(),
                     AcceptedAt = DateTime.UtcNow
                 }
             );
@@ -1553,21 +1472,21 @@ namespace RangeVote2.Data
 
         public async Task<List<OrganizationListItem>> GetOrganizationsWithPublicBallotsAsync()
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var results = await connection.QueryAsync<dynamic>(
                 @"SELECT DISTINCT
-                    o.Id,
-                    o.Name,
-                    o.Description,
-                    o.IsPublic,
-                    o.CreatedAt,
-                    (SELECT COUNT(*) FROM organization_members WHERE OrganizationId = o.Id) as MemberCount,
-                    (SELECT COUNT(*) FROM ballots WHERE OrganizationId = o.Id AND IsPublic = 1 AND Status = 'Open') as BallotCount
+                    o.id,
+                    o.name,
+                    o.description,
+                    o.ispublic,
+                    o.createdat,
+                    (SELECT COUNT(*) FROM organization_members WHERE organizationid = o.id) as membercount,
+                    (SELECT COUNT(*) FROM ballots WHERE organizationid = o.id AND ispublic = TRUE AND status = 'Open') as ballotcount
                 FROM organizations o
-                INNER JOIN ballots b ON o.Id = b.OrganizationId
-                WHERE b.IsPublic = 1 AND b.Status = 'Open' AND b.IsOpen = 1
-                ORDER BY o.Name"
+                INNER JOIN ballots b ON o.id = b.organizationid
+                WHERE b.ispublic = TRUE AND b.status = 'Open' AND b.isopen = TRUE
+                ORDER BY o.name"
             );
 
             var items = new List<OrganizationListItem>();
@@ -1575,16 +1494,16 @@ namespace RangeVote2.Data
             {
                 items.Add(new OrganizationListItem
                 {
-                    Id = Guid.Parse(r.Id),
-                    Name = r.Name,
-                    Description = r.Description,
-                    IsPublic = r.IsPublic == 1,
+                    Id = Guid.Parse((string)r.id),
+                    Name = (string)r.name,
+                    Description = (string?)r.description,
+                    IsPublic = (bool)r.ispublic,
                     IsOwner = false,
                     IsMember = false,
                     MyRole = null,
-                    MemberCount = Convert.ToInt32(r.MemberCount),
-                    BallotCount = Convert.ToInt32(r.BallotCount),
-                    CreatedAt = DateTime.Parse(r.CreatedAt)
+                    MemberCount = (int)(long)r.membercount,
+                    BallotCount = (int)(long)r.ballotcount,
+                    CreatedAt = (DateTime)r.createdat
                 });
             }
 
@@ -1599,30 +1518,21 @@ namespace RangeVote2.Data
 
             try
             {
-                // Use provided path or default to Ballots.json
                 string filePath = jsonFilePath ?? "Ballots.json";
 
                 if (!File.Exists(filePath))
-                {
                     return preview;
-                }
 
-                // Read and deserialize the JSON file
                 string json = await File.ReadAllTextAsync(filePath);
                 var allCandidates = JsonConvert.DeserializeObject<Candidate[]>(json);
 
                 if (allCandidates == null || allCandidates.Length == 0)
-                {
                     return preview;
-                }
 
-                // Group candidates by ElectionID and count them
-                var groupedByElection = allCandidates
+                return allCandidates
                     .Where(c => !string.IsNullOrEmpty(c.ElectionID))
                     .GroupBy(c => c.ElectionID)
                     .ToDictionary(g => g.Key!, g => g.Count());
-
-                return groupedByElection;
             }
             catch (Exception ex)
             {
@@ -1637,7 +1547,6 @@ namespace RangeVote2.Data
 
             try
             {
-                // Use provided path or default to Ballots.json
                 string filePath = jsonFilePath ?? "Ballots.json";
 
                 if (!File.Exists(filePath))
@@ -1646,7 +1555,6 @@ namespace RangeVote2.Data
                     return result;
                 }
 
-                // Read and deserialize the JSON file
                 string json = await File.ReadAllTextAsync(filePath);
                 var allCandidates = JsonConvert.DeserializeObject<Candidate[]>(json);
 
@@ -1656,13 +1564,11 @@ namespace RangeVote2.Data
                     return result;
                 }
 
-                // Group candidates by ElectionID
                 var groupedByElection = allCandidates
                     .Where(c => !string.IsNullOrEmpty(c.ElectionID))
                     .GroupBy(c => c.ElectionID)
                     .ToList();
 
-                // Filter by selected elections if provided
                 if (electionIdsToImport != null && electionIdsToImport.Any())
                 {
                     groupedByElection = groupedByElection
@@ -1670,17 +1576,15 @@ namespace RangeVote2.Data
                         .ToList();
                 }
 
-                using var connection = new SqliteConnection(_config.DatabaseName);
+                using var connection = new NpgsqlConnection(_config.DatabaseName);
 
-                // For each election, create a ballot and its candidates
                 foreach (var group in groupedByElection)
                 {
                     string electionId = group.Key!;
                     var candidates = group.ToList();
 
-                    // Check if ballot already exists
                     var existingBallot = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                        @"SELECT Id FROM ballots WHERE Name = @Name",
+                        @"SELECT id FROM ballots WHERE name = @Name",
                         new { Name = electionId }
                     );
 
@@ -1688,49 +1592,31 @@ namespace RangeVote2.Data
 
                     if (existingBallot != null)
                     {
-                        // Use existing ballot ID
-                        ballotId = Guid.Parse(existingBallot.Id);
+                        ballotId = Guid.Parse((string)existingBallot.id);
                         Console.WriteLine($"[ImportBallotsFromJsonAsync] Found existing ballot: {electionId} ({ballotId})");
                     }
                     else
                     {
-                        // Create new ballot
                         ballotId = Guid.NewGuid();
                         var now = DateTime.UtcNow;
 
-                        var ballot = new BallotMetadata
-                        {
-                            Id = ballotId,
-                            Name = electionId,
-                            Description = $"Imported from Ballots.json - {candidates.Count} options",
-                            OwnerId = userId,
-                            OrganizationId = null,
-                            Status = BallotStatus.Open,
-                            CreatedAt = now,
-                            CloseDate = null,
-                            IsOpen = true,
-                            IsPublic = true,
-                            CandidateCount = candidates.Count,
-                            VoteCount = 0
-                        };
-
                         await connection.ExecuteAsync(
-                            @"INSERT INTO ballots (Id, Name, Description, OwnerId, OrganizationId, Status, CreatedAt, CloseDate, IsOpen, IsPublic, CandidateCount, VoteCount)
+                            @"INSERT INTO ballots (id, name, description, ownerid, organizationid, status, createdat, closedate, isopen, ispublic, candidatecount, votecount)
                               VALUES (@Id, @Name, @Description, @OwnerId, @OrganizationId, @Status, @CreatedAt, @CloseDate, @IsOpen, @IsPublic, @CandidateCount, @VoteCount)",
                             new
                             {
-                                Id = ballot.Id.ToString(),
-                                ballot.Name,
-                                ballot.Description,
-                                OwnerId = ballot.OwnerId.ToString(),
-                                OrganizationId = ballot.OrganizationId?.ToString(),
-                                Status = (int)ballot.Status,
-                                CreatedAt = ballot.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
-                                CloseDate = ballot.CloseDate?.ToString("yyyy-MM-dd HH:mm:ss"),
-                                IsOpen = ballot.IsOpen ? 1 : 0,
-                                IsPublic = ballot.IsPublic ? 1 : 0,
-                                ballot.CandidateCount,
-                                ballot.VoteCount
+                                Id = ballotId.ToString(),
+                                Name = electionId,
+                                Description = $"Imported from Ballots.json - {candidates.Count} options",
+                                OwnerId = userId.ToString(),
+                                OrganizationId = (string?)null,
+                                Status = BallotStatus.Open.ToString(),
+                                CreatedAt = now,
+                                CloseDate = (DateTime?)null,
+                                IsOpen = true,
+                                IsPublic = true,
+                                CandidateCount = candidates.Count,
+                                VoteCount = 0
                             }
                         );
 
@@ -1738,38 +1624,26 @@ namespace RangeVote2.Data
                         Console.WriteLine($"[ImportBallotsFromJsonAsync] Created ballot: {electionId} ({ballotId})");
                     }
 
-                    // Add candidates to the ballot
                     foreach (var candidate in candidates)
                     {
-                        // Check if candidate already exists
                         var existingCandidate = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                            @"SELECT Id FROM ballot_candidates WHERE BallotId = @BallotId AND Name = @Name",
+                            @"SELECT id FROM ballot_candidates WHERE ballotid = @BallotId AND name = @Name",
                             new { BallotId = ballotId.ToString(), Name = candidate.Name }
                         );
 
                         if (existingCandidate == null)
                         {
-                            var ballotCandidate = new BallotCandidate
-                            {
-                                Id = Guid.NewGuid(),
-                                BallotId = ballotId,
-                                Name = candidate.Name ?? "Unnamed",
-                                Description = candidate.Description,
-                                ImageLink = candidate.Image_link,
-                                CreatedAt = DateTime.UtcNow
-                            };
-
                             await connection.ExecuteAsync(
-                                @"INSERT INTO ballot_candidates (Id, BallotId, Name, Description, ImageLink, CreatedAt)
+                                @"INSERT INTO ballot_candidates (id, ballotid, name, description, imagelink, createdat)
                                   VALUES (@Id, @BallotId, @Name, @Description, @ImageLink, @CreatedAt)",
                                 new
                                 {
-                                    Id = ballotCandidate.Id.ToString(),
-                                    BallotId = ballotCandidate.BallotId.ToString(),
-                                    ballotCandidate.Name,
-                                    ballotCandidate.Description,
-                                    ballotCandidate.ImageLink,
-                                    CreatedAt = ballotCandidate.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                                    Id = Guid.NewGuid().ToString(),
+                                    BallotId = ballotId.ToString(),
+                                    Name = candidate.Name ?? "Unnamed",
+                                    Description = candidate.Description,
+                                    ImageLink = candidate.Image_link,
+                                    CreatedAt = DateTime.UtcNow
                                 }
                             );
 
@@ -1777,16 +1651,15 @@ namespace RangeVote2.Data
                         }
                     }
 
-                    // Update candidate count for existing ballots
                     if (existingBallot != null)
                     {
                         var candidateCount = await connection.ExecuteScalarAsync<int>(
-                            @"SELECT COUNT(*) FROM ballot_candidates WHERE BallotId = @BallotId",
+                            @"SELECT COUNT(*) FROM ballot_candidates WHERE ballotid = @BallotId",
                             new { BallotId = ballotId.ToString() }
                         );
 
                         await connection.ExecuteAsync(
-                            @"UPDATE ballots SET CandidateCount = @CandidateCount WHERE Id = @Id",
+                            @"UPDATE ballots SET candidatecount = @CandidateCount WHERE id = @Id",
                             new { CandidateCount = candidateCount, Id = ballotId.ToString() }
                         );
                     }
@@ -1808,24 +1681,24 @@ namespace RangeVote2.Data
 
         public async Task UpdateUserThemeAsync(Guid userId, string theme)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE users SET PreferredTheme = @Theme WHERE Id = @UserId",
+                "UPDATE users SET preferredtheme = @Theme WHERE id = @UserId",
                 new { Theme = theme, UserId = userId.ToString() }
             );
         }
 
         public async Task<string> GetUserThemeAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var theme = await connection.QueryFirstOrDefaultAsync<string>(
-                "SELECT PreferredTheme FROM users WHERE Id = @UserId",
+                "SELECT preferredtheme FROM users WHERE id = @UserId",
                 new { UserId = userId.ToString() }
             );
 
-            return theme ?? "cow"; // Default to cow theme if not set
+            return theme ?? "cow";
         }
     }
 

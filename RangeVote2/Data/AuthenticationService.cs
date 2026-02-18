@@ -1,5 +1,5 @@
 using Dapper;
-using Microsoft.Data.Sqlite;
+using Npgsql;
 using BCrypt.Net;
 
 namespace RangeVote2.Data
@@ -24,10 +24,10 @@ namespace RangeVote2.Data
 
         public async Task<ApplicationUser?> AuthenticateAsync(string email, string password)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             var user = await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Email = @Email",
+                "SELECT * FROM users WHERE email = @Email",
                 new { Email = email }
             );
 
@@ -44,11 +44,11 @@ namespace RangeVote2.Data
 
         public async Task<ApplicationUser?> RegisterAsync(RegisterModel model)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             // Check if user already exists
             var existingUser = await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Email = @Email",
+                "SELECT * FROM users WHERE email = @Email",
                 new { Email = model.Email }
             );
 
@@ -66,7 +66,7 @@ namespace RangeVote2.Data
             {
                 organizationId = Guid.NewGuid();
                 await connection.ExecuteAsync(
-                    @"INSERT INTO organizations (Id, Name, OwnerId, CreatedAt)
+                    @"INSERT INTO organizations (id, name, ownerid, createdat)
                       VALUES (@Id, @Name, @OwnerId, @CreatedAt)",
                     new
                     {
@@ -79,7 +79,7 @@ namespace RangeVote2.Data
 
                 // Add user as owner in organization_members
                 await connection.ExecuteAsync(
-                    @"INSERT INTO organization_members (Id, OrganizationId, UserId, Role, JoinedAt)
+                    @"INSERT INTO organization_members (id, organizationid, userid, role, joinedat)
                       VALUES (@Id, @OrganizationId, @UserId, @Role, @JoinedAt)",
                     new
                     {
@@ -94,7 +94,7 @@ namespace RangeVote2.Data
 
             // Create user
             await connection.ExecuteAsync(
-                @"INSERT INTO users (Id, Email, PasswordHash, DisplayName, OrganizationId, CreatedAt, LastLoginAt)
+                @"INSERT INTO users (id, email, passwordhash, displayname, organizationid, createdat, lastloginat)
                   VALUES (@Id, @Email, @PasswordHash, @DisplayName, @OrganizationId, @CreatedAt, @LastLoginAt)",
                 new
                 {
@@ -113,31 +113,31 @@ namespace RangeVote2.Data
 
         public async Task<ApplicationUser?> GetUserByIdAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             return await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Id = @Id",
-                new { Id = userId }
+                "SELECT * FROM users WHERE id = @Id",
+                new { Id = userId.ToString() }
             );
         }
 
         public async Task<ApplicationUser?> GetUserByEmailAsync(string email)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             return await connection.QueryFirstOrDefaultAsync<ApplicationUser>(
-                "SELECT * FROM users WHERE Email = @Email",
+                "SELECT * FROM users WHERE email = @Email",
                 new { Email = email }
             );
         }
 
         public async Task UpdateLastLoginAsync(Guid userId)
         {
-            using var connection = new SqliteConnection(_config.DatabaseName);
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
 
             await connection.ExecuteAsync(
-                "UPDATE users SET LastLoginAt = @LastLoginAt WHERE Id = @Id",
-                new { Id = userId, LastLoginAt = DateTime.UtcNow }
+                "UPDATE users SET lastloginat = @LastLoginAt WHERE id = @Id",
+                new { Id = userId.ToString(), LastLoginAt = DateTime.UtcNow }
             );
         }
     }

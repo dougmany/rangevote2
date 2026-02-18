@@ -8,8 +8,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link id="favicon-svg" rel="icon" type="image/svg+xml" href="favicon-cow.svg" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+        (function () {
+            var themes = ['cow', 'deer', 'bison', 'plain'];
+            function setFavicon(theme) {
+                var t = themes.includes(theme) ? theme : 'cow';
+                document.getElementById('favicon-svg').href = 'favicon-' + t + '.svg';
+            }
+            setFavicon(localStorage.getItem('theme'));
+            var observer = new MutationObserver(function () {
+                var body = document.body;
+                if (!body) return;
+                for (var i = 0; i < themes.length; i++) {
+                    if (body.classList.contains('theme-' + themes[i])) {
+                        setFavicon(themes[i]);
+                        break;
+                    }
+                }
+            });
+            document.addEventListener('DOMContentLoaded', function () {
+                observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+            });
+        })();
+    </script>
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="RangeVote2.styles.css" rel="stylesheet" />

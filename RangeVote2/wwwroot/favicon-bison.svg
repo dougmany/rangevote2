@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Bison face - prairie tan theme -->
+  <circle cx="32" cy="32" r="30" fill="#cd853f"/>
+
+  <!-- Horns -->
+  <path d="M 18 20 Q 8 12 10 4" stroke="#4a3000" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 10 4 Q 14 2 16 6" stroke="#4a3000" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 46 20 Q 56 12 54 4" stroke="#4a3000" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 54 4 Q 50 2 48 6" stroke="#4a3000" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Massive head / hump shape -->
+  <ellipse cx="32" cy="30" rx="22" ry="18" fill="#7a4a1a" stroke="#4a3000" stroke-width="2"/>
+
+  <!-- Fur tuft on forehead -->
+  <ellipse cx="32" cy="20" rx="12" ry="7" fill="#5a3510"/>
+  <ellipse cx="24" cy="22" rx="5" ry="4" fill="#5a3510"/>
+  <ellipse cx="40" cy="22" rx="5" ry="4" fill="#5a3510"/>
+
+  <!-- Snout (wide and boxy) -->
+  <rect x="20" y="38" width="24" height="16" rx="6" fill="#c8a060" stroke="#4a3000" stroke-width="1.5"/>
+
+  <!-- Nostrils -->
+  <ellipse cx="26" cy="44" rx="3" ry="4" fill="#4a3000"/>
+  <ellipse cx="38" cy="44" rx="3" ry="4" fill="#4a3000"/>
+
+  <!-- Eyes (small, deep-set) -->
+  <circle cx="24" cy="30" r="3" fill="#1a0a00" stroke="#4a3000" stroke-width="1.5"/>
+  <circle cx="40" cy="30" r="3" fill="#1a0a00" stroke="#4a3000" stroke-width="1.5"/>
+  <circle cx="23" cy="29" r="1" fill="#fff" opacity="0.6"/>
+  <circle cx="39" cy="29" r="1" fill="#fff" opacity="0.6"/>
+
+  <!-- Beard -->
+  <ellipse cx="32" cy="56" rx="8" ry="5" fill="#5a3510"/>
+</svg>

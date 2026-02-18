@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Deer face - forest brown theme -->
+  <circle cx="32" cy="32" r="30" fill="#8b4513"/>
+
+  <!-- Antlers -->
+  <line x1="22" y1="16" x2="16" y2="4" stroke="#5c2a00" stroke-width="3" stroke-linecap="round"/>
+  <line x1="16" y1="4" x2="10" y2="8" stroke="#5c2a00" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="16" y1="4" x2="14" y2="0" stroke="#5c2a00" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="42" y1="16" x2="48" y2="4" stroke="#5c2a00" stroke-width="3" stroke-linecap="round"/>
+  <line x1="48" y1="4" x2="54" y2="8" stroke="#5c2a00" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="48" y1="4" x2="50" y2="0" stroke="#5c2a00" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Head -->
+  <ellipse cx="32" cy="36" rx="18" ry="20" fill="#c8894a" stroke="#5c2a00" stroke-width="2"/>
+
+  <!-- Ears -->
+  <ellipse cx="16" cy="26" rx="5" ry="9" fill="#c8894a" stroke="#5c2a00" stroke-width="2"/>
+  <ellipse cx="48" cy="26" rx="5" ry="9" fill="#c8894a" stroke="#5c2a00" stroke-width="2"/>
+  <ellipse cx="16" cy="26" rx="3" ry="6" fill="#e8b08a"/>
+  <ellipse cx="48" cy="26" rx="3" ry="6" fill="#e8b08a"/>
+
+  <!-- White muzzle -->
+  <ellipse cx="32" cy="44" rx="11" ry="9" fill="#f5e6d0"/>
+
+  <!-- Nose -->
+  <ellipse cx="32" cy="38" rx="4" ry="3" fill="#5c2a00"/>
+  <ellipse cx="31" cy="37" rx="1.5" ry="1" fill="#8b4513" opacity="0.6"/>
+
+  <!-- Eyes -->
+  <ellipse cx="25" cy="31" rx="3.5" ry="3" fill="#2a1a00" stroke="#5c2a00" stroke-width="1"/>
+  <ellipse cx="39" cy="31" rx="3.5" ry="3" fill="#2a1a00" stroke="#5c2a00" stroke-width="1"/>
+  <circle cx="24" cy="30" r="1" fill="#fff" opacity="0.7"/>
+  <circle cx="38" cy="30" r="1" fill="#fff" opacity="0.7"/>
+
+  <!-- Mouth -->
+  <path d="M 27 48 Q 32 51 37 48" stroke="#5c2a00" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>

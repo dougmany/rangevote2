@@ -1,6 +1,6 @@
 
 using Dapper;
-using Microsoft.Data.Sqlite;
+using Npgsql;
 using System;
 using System.Linq;
 
@@ -21,233 +21,223 @@ namespace RangeVote2.Data
       _databaseConfig = databaseConfig;
     }
 
+    private bool TableExists(NpgsqlConnection connection, string tableName)
+    {
+      var count = connection.QueryFirstOrDefault<int>(
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = @TableName;",
+        new { TableName = tableName }
+      );
+      return count > 0;
+    }
+
+    private bool ColumnExists(NpgsqlConnection connection, string tableName, string columnName)
+    {
+      var count = connection.QueryFirstOrDefault<int>(
+        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = @TableName AND column_name = @ColumnName;",
+        new { TableName = tableName, ColumnName = columnName }
+      );
+      return count > 0;
+    }
+
     public void Setup()
     {
-      using(var connection = new SqliteConnection(_databaseConfig.DatabaseName))
+      using (var connection = new NpgsqlConnection(_databaseConfig.DatabaseName))
       {
         // Create candidate table if it doesn't exist
-        var table = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'candidate';");
-        var tableName = table.FirstOrDefault();
-        if (string.IsNullOrEmpty(tableName) || tableName != "candidate")
+        if (!TableExists(connection, "candidate"))
         {
           connection.Execute(
-            @"Create Table candidate (
-              GUID VARCHAR(50) NOT NULL,
-              Name VARCHAR(100) NOT NULL,
-              Description VARCHAR(1000) NULL,
-              Score Int32 NULL,
-              ElectionID VARCHAR(50));"
+            @"CREATE TABLE candidate (
+              guid VARCHAR(50) NOT NULL,
+              name VARCHAR(100) NOT NULL,
+              description VARCHAR(1000) NULL,
+              score INTEGER NULL,
+              electionid VARCHAR(50),
+              organizationid VARCHAR(36),
+              image_link VARCHAR(500));"
           );
         }
 
         // Create users table
-        var usersTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'users';");
-        if (!usersTable.Any())
+        if (!TableExists(connection, "users"))
         {
           connection.Execute(
             @"CREATE TABLE users (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              Email VARCHAR(255) UNIQUE NOT NULL,
-              PasswordHash VARCHAR(255) NOT NULL,
-              DisplayName VARCHAR(100),
-              OrganizationId VARCHAR(36),
-              CreatedAt DATETIME NOT NULL,
-              LastLoginAt DATETIME);"
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              email VARCHAR(255) UNIQUE NOT NULL,
+              passwordhash VARCHAR(255) NOT NULL,
+              displayname VARCHAR(100),
+              organizationid VARCHAR(36),
+              createdat TIMESTAMPTZ NOT NULL,
+              lastloginat TIMESTAMPTZ,
+              preferredtheme VARCHAR(20) NOT NULL DEFAULT 'cow');"
           );
         }
 
         // Create organizations table
-        var orgsTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'organizations';");
-        if (!orgsTable.Any())
+        if (!TableExists(connection, "organizations"))
         {
           connection.Execute(
             @"CREATE TABLE organizations (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              Name VARCHAR(255) NOT NULL,
-              OwnerId VARCHAR(36) NOT NULL,
-              CreatedAt DATETIME NOT NULL);"
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              name VARCHAR(255) NOT NULL,
+              ownerid VARCHAR(36) NOT NULL,
+              createdat TIMESTAMPTZ NOT NULL,
+              ispublic BOOLEAN NOT NULL DEFAULT FALSE,
+              description TEXT);"
           );
         }
 
         // Create organization_members table
-        var membersTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'organization_members';");
-        if (!membersTable.Any())
+        if (!TableExists(connection, "organization_members"))
         {
           connection.Execute(
             @"CREATE TABLE organization_members (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              OrganizationId VARCHAR(36) NOT NULL,
-              UserId VARCHAR(36) NOT NULL,
-              Role VARCHAR(50) NOT NULL DEFAULT 'Member',
-              JoinedAt DATETIME NOT NULL);"
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              organizationid VARCHAR(36) NOT NULL,
+              userid VARCHAR(36) NOT NULL,
+              role VARCHAR(50) NOT NULL DEFAULT 'Member',
+              joinedat TIMESTAMPTZ NOT NULL);"
           );
         }
 
-        // Add IsPublic and Description columns to organizations if they don't exist
-        var orgColumns = connection.Query<dynamic>("PRAGMA table_info(organizations);");
-        var hasIsPublic = orgColumns.Any(c => c.name == "IsPublic");
-        if (!hasIsPublic)
-        {
-          connection.Execute("ALTER TABLE organizations ADD COLUMN IsPublic BOOLEAN NOT NULL DEFAULT 0;");
-        }
-        var hasOrgDescription = orgColumns.Any(c => c.name == "Description");
-        if (!hasOrgDescription)
-        {
-          connection.Execute("ALTER TABLE organizations ADD COLUMN Description TEXT;");
-        }
+        // Add columns to existing tables if missing (migration support)
+        if (!ColumnExists(connection, "organizations", "ispublic"))
+          connection.Execute("ALTER TABLE organizations ADD COLUMN ispublic BOOLEAN NOT NULL DEFAULT FALSE;");
 
-        // Add PreferredTheme column to users if it doesn't exist
-        var userColumns = connection.Query<dynamic>("PRAGMA table_info(users);");
-        var hasPreferredTheme = userColumns.Any(c => c.name == "PreferredTheme");
-        if (!hasPreferredTheme)
-        {
-          connection.Execute("ALTER TABLE users ADD COLUMN PreferredTheme VARCHAR(20) NOT NULL DEFAULT 'cow';");
-        }
+        if (!ColumnExists(connection, "organizations", "description"))
+          connection.Execute("ALTER TABLE organizations ADD COLUMN description TEXT;");
 
-        // Update candidate table to add OrganizationId if it doesn't exist
-        var candidateColumns = connection.Query<dynamic>("PRAGMA table_info(candidate);");
-        var hasOrgId = candidateColumns.Any(c => c.name == "OrganizationId");
-        if (!hasOrgId)
-        {
-          connection.Execute("ALTER TABLE candidate ADD COLUMN OrganizationId VARCHAR(36);");
-        }
+        if (!ColumnExists(connection, "users", "preferredtheme"))
+          connection.Execute("ALTER TABLE users ADD COLUMN preferredtheme VARCHAR(20) NOT NULL DEFAULT 'cow';");
 
-        var hasImageLink = candidateColumns.Any(c => c.name == "Image_link");
-        if (!hasImageLink)
-        {
-          connection.Execute("ALTER TABLE candidate ADD COLUMN Image_link VARCHAR(500);");
-        }
+        if (!ColumnExists(connection, "candidate", "organizationid"))
+          connection.Execute("ALTER TABLE candidate ADD COLUMN organizationid VARCHAR(36);");
+
+        if (!ColumnExists(connection, "candidate", "image_link"))
+          connection.Execute("ALTER TABLE candidate ADD COLUMN image_link VARCHAR(500);");
 
         // ========== NEW BALLOT SYSTEM TABLES ==========
 
-        // Create ballots table
-        var ballotsTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'ballots';");
-        if (!ballotsTable.Any())
+        if (!TableExists(connection, "ballots"))
         {
           connection.Execute(
             @"CREATE TABLE ballots (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              Name VARCHAR(200) NOT NULL,
-              Description TEXT,
-              OwnerId VARCHAR(36) NOT NULL,
-              OrganizationId VARCHAR(36),
-              Status VARCHAR(20) NOT NULL DEFAULT 'Draft',
-              CreatedAt DATETIME NOT NULL,
-              OpenDate DATETIME,
-              CloseDate DATETIME,
-              IsOpen BOOLEAN NOT NULL DEFAULT 1,
-              CandidateCount INTEGER NOT NULL DEFAULT 0,
-              VoteCount INTEGER NOT NULL DEFAULT 0,
-              FOREIGN KEY (OwnerId) REFERENCES users(Id),
-              FOREIGN KEY (OrganizationId) REFERENCES organizations(Id)
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              name VARCHAR(200) NOT NULL,
+              description TEXT,
+              ownerid VARCHAR(36) NOT NULL,
+              organizationid VARCHAR(36),
+              status VARCHAR(20) NOT NULL DEFAULT 'Draft',
+              createdat TIMESTAMPTZ NOT NULL,
+              opendate TIMESTAMPTZ,
+              closedate TIMESTAMPTZ,
+              isopen BOOLEAN NOT NULL DEFAULT TRUE,
+              ispublic BOOLEAN NOT NULL DEFAULT FALSE,
+              candidatecount INTEGER NOT NULL DEFAULT 0,
+              votecount INTEGER NOT NULL DEFAULT 0,
+              FOREIGN KEY (ownerid) REFERENCES users(id),
+              FOREIGN KEY (organizationid) REFERENCES organizations(id)
             );"
           );
 
-          connection.Execute("CREATE INDEX idx_ballots_owner ON ballots(OwnerId);");
-          connection.Execute("CREATE INDEX idx_ballots_org ON ballots(OrganizationId);");
-          connection.Execute("CREATE INDEX idx_ballots_status ON ballots(Status);");
+          connection.Execute("CREATE INDEX idx_ballots_owner ON ballots(ownerid);");
+          connection.Execute("CREATE INDEX idx_ballots_org ON ballots(organizationid);");
+          connection.Execute("CREATE INDEX idx_ballots_status ON ballots(status);");
+          connection.Execute("CREATE INDEX idx_ballots_public ON ballots(ispublic);");
         }
-
-        // Add IsPublic column to ballots if it doesn't exist
-        var ballotColumns = connection.Query<dynamic>("PRAGMA table_info(ballots);");
-        var hasBallotIsPublic = ballotColumns.Any(c => c.name == "IsPublic");
-        if (!hasBallotIsPublic)
+        else
         {
-          connection.Execute("ALTER TABLE ballots ADD COLUMN IsPublic BOOLEAN NOT NULL DEFAULT 0;");
-          connection.Execute("CREATE INDEX idx_ballots_public ON ballots(IsPublic);");
+          if (!ColumnExists(connection, "ballots", "ispublic"))
+          {
+            connection.Execute("ALTER TABLE ballots ADD COLUMN ispublic BOOLEAN NOT NULL DEFAULT FALSE;");
+            connection.Execute("CREATE INDEX IF NOT EXISTS idx_ballots_public ON ballots(ispublic);");
+          }
         }
 
-        // Create ballot_candidates table
-        var ballotCandidatesTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'ballot_candidates';");
-        if (!ballotCandidatesTable.Any())
+        if (!TableExists(connection, "ballot_candidates"))
         {
           connection.Execute(
             @"CREATE TABLE ballot_candidates (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              BallotId VARCHAR(36) NOT NULL,
-              Name VARCHAR(200) NOT NULL,
-              Description TEXT,
-              ImageLink VARCHAR(500),
-              CreatedAt DATETIME NOT NULL,
-              FOREIGN KEY (BallotId) REFERENCES ballots(Id) ON DELETE CASCADE
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              ballotid VARCHAR(36) NOT NULL,
+              name VARCHAR(200) NOT NULL,
+              description TEXT,
+              imagelink VARCHAR(500),
+              createdat TIMESTAMPTZ NOT NULL,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE
             );"
           );
 
-          connection.Execute("CREATE INDEX idx_ballot_candidates_ballot ON ballot_candidates(BallotId);");
+          connection.Execute("CREATE INDEX idx_ballot_candidates_ballot ON ballot_candidates(ballotid);");
         }
 
-        // Create ballot_share_links table
-        var shareLinksTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'ballot_share_links';");
-        if (!shareLinksTable.Any())
+        if (!TableExists(connection, "ballot_share_links"))
         {
           connection.Execute(
             @"CREATE TABLE ballot_share_links (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              BallotId VARCHAR(36) NOT NULL,
-              ShareToken VARCHAR(100) NOT NULL UNIQUE,
-              Permission VARCHAR(20) NOT NULL,
-              CreatedAt DATETIME NOT NULL,
-              CreatedBy VARCHAR(36) NOT NULL,
-              ExpiresAt DATETIME,
-              IsActive BOOLEAN NOT NULL DEFAULT 1,
-              UseCount INTEGER NOT NULL DEFAULT 0,
-              FOREIGN KEY (BallotId) REFERENCES ballots(Id) ON DELETE CASCADE,
-              FOREIGN KEY (CreatedBy) REFERENCES users(Id)
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              ballotid VARCHAR(36) NOT NULL,
+              sharetoken VARCHAR(100) NOT NULL UNIQUE,
+              permission VARCHAR(20) NOT NULL,
+              createdat TIMESTAMPTZ NOT NULL,
+              createdby VARCHAR(36) NOT NULL,
+              expiresat TIMESTAMPTZ,
+              isactive BOOLEAN NOT NULL DEFAULT TRUE,
+              usecount INTEGER NOT NULL DEFAULT 0,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE,
+              FOREIGN KEY (createdby) REFERENCES users(id)
             );"
           );
 
-          connection.Execute("CREATE INDEX idx_share_links_ballot ON ballot_share_links(BallotId);");
-          connection.Execute("CREATE INDEX idx_share_links_token ON ballot_share_links(ShareToken);");
+          connection.Execute("CREATE INDEX idx_share_links_ballot ON ballot_share_links(ballotid);");
+          connection.Execute("CREATE INDEX idx_share_links_token ON ballot_share_links(sharetoken);");
         }
 
-        // Create ballot_permissions table
-        var permissionsTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'ballot_permissions';");
-        if (!permissionsTable.Any())
+        if (!TableExists(connection, "ballot_permissions"))
         {
           connection.Execute(
             @"CREATE TABLE ballot_permissions (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              BallotId VARCHAR(36) NOT NULL,
-              UserId VARCHAR(36),
-              InvitedEmail VARCHAR(255),
-              Permission VARCHAR(20) NOT NULL,
-              CreatedAt DATETIME NOT NULL,
-              CreatedBy VARCHAR(36) NOT NULL,
-              AcceptedAt DATETIME,
-              FOREIGN KEY (BallotId) REFERENCES ballots(Id) ON DELETE CASCADE,
-              FOREIGN KEY (UserId) REFERENCES users(Id),
-              FOREIGN KEY (CreatedBy) REFERENCES users(Id)
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              ballotid VARCHAR(36) NOT NULL,
+              userid VARCHAR(36),
+              invitedemail VARCHAR(255),
+              permission VARCHAR(20) NOT NULL,
+              createdat TIMESTAMPTZ NOT NULL,
+              createdby VARCHAR(36) NOT NULL,
+              acceptedat TIMESTAMPTZ,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE,
+              FOREIGN KEY (userid) REFERENCES users(id),
+              FOREIGN KEY (createdby) REFERENCES users(id)
             );"
           );
 
-          connection.Execute("CREATE INDEX idx_ballot_permissions_ballot ON ballot_permissions(BallotId);");
-          connection.Execute("CREATE INDEX idx_ballot_permissions_user ON ballot_permissions(UserId);");
-          connection.Execute("CREATE INDEX idx_ballot_permissions_email ON ballot_permissions(InvitedEmail);");
+          connection.Execute("CREATE INDEX idx_ballot_permissions_ballot ON ballot_permissions(ballotid);");
+          connection.Execute("CREATE INDEX idx_ballot_permissions_user ON ballot_permissions(userid);");
+          connection.Execute("CREATE INDEX idx_ballot_permissions_email ON ballot_permissions(invitedemail);");
         }
 
-        // Create votes table
-        var votesTable = connection.Query<String>("SELECT name FROM sqlite_master WHERE type='table' AND name = 'votes';");
-        if (!votesTable.Any())
+        if (!TableExists(connection, "votes"))
         {
           connection.Execute(
             @"CREATE TABLE votes (
-              Id VARCHAR(36) PRIMARY KEY NOT NULL,
-              BallotId VARCHAR(36) NOT NULL,
-              CandidateId VARCHAR(36) NOT NULL,
-              UserId VARCHAR(36) NOT NULL,
-              Score INTEGER NOT NULL,
-              CreatedAt DATETIME NOT NULL,
-              UpdatedAt DATETIME NOT NULL,
-              FOREIGN KEY (BallotId) REFERENCES ballots(Id) ON DELETE CASCADE,
-              FOREIGN KEY (CandidateId) REFERENCES ballot_candidates(Id) ON DELETE CASCADE,
-              FOREIGN KEY (UserId) REFERENCES users(Id),
-              UNIQUE(BallotId, CandidateId, UserId)
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              ballotid VARCHAR(36) NOT NULL,
+              candidateid VARCHAR(36) NOT NULL,
+              userid VARCHAR(36) NOT NULL,
+              score INTEGER NOT NULL,
+              createdat TIMESTAMPTZ NOT NULL,
+              updatedat TIMESTAMPTZ NOT NULL,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE,
+              FOREIGN KEY (candidateid) REFERENCES ballot_candidates(id) ON DELETE CASCADE,
+              FOREIGN KEY (userid) REFERENCES users(id),
+              UNIQUE(ballotid, candidateid, userid)
             );"
           );
 
-          connection.Execute("CREATE INDEX idx_votes_ballot ON votes(BallotId);");
-          connection.Execute("CREATE INDEX idx_votes_user ON votes(UserId);");
-          connection.Execute("CREATE INDEX idx_votes_candidate ON votes(CandidateId);");
+          connection.Execute("CREATE INDEX idx_votes_ballot ON votes(ballotid);");
+          connection.Execute("CREATE INDEX idx_votes_user ON votes(userid);");
+          connection.Execute("CREATE INDEX idx_votes_candidate ON votes(candidateid);");
         }
       }
     }

@@ -12,14 +12,10 @@ namespace RangeVote2.Data
                 return Guid.Empty;
 
             if (value is string stringValue)
-            {
                 return Guid.Parse(stringValue);
-            }
 
             if (value is Guid guidValue)
-            {
                 return guidValue;
-            }
 
             throw new InvalidCastException($"Unable to convert {value.GetType()} to Guid");
         }
@@ -45,9 +41,7 @@ namespace RangeVote2.Data
             }
 
             if (value is Guid guidValue)
-            {
                 return guidValue;
-            }
 
             throw new InvalidCastException($"Unable to convert {value.GetType()} to Guid?");
         }

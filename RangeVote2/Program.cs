@@ -8,7 +8,7 @@ using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 using Dapper;
 
-// Configure Dapper to handle Guid type conversions with SQLite
+// Configure Dapper to handle Guid type conversions (IDs stored as VARCHAR)
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
 SqlMapper.AddTypeHandler(new NullableGuidTypeHandler());
 
