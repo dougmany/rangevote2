@@ -493,218 +493,560 @@
         "Score": 50
     },
     {
-      "Description": "Banff National Park and Lake Louise located in Alberta's Rocky Mountains, North of Montana",
-       "ElectionId": "2024_Vacation",
-       "Name": "Banff National Park and Lake Louise.",
-       "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Moraine_Lake_17092005.jpg/284px-Moraine_Lake_17092005.jpg",
-       "Score": 50
-     },
+        "Description": "Banff National Park and Lake Louise located in Alberta's Rocky Mountains, North of Montana",
+        "ElectionId": "2024_Vacation",
+        "Name": "Banff National Park and Lake Louise.",
+        "Image_link": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Moraine_Lake_17092005.jpg/284px-Moraine_Lake_17092005.jpg",
+        "Score": 50
+    },
     {
-      "Description": "Rotterdam, Invergordon, IsaFjordur, AkureyriseydisFjordur, Reykjavik",
-       "ElectionId": "2026_Vacation",
-       "Name": "Fjords of Iceland (One-way)",
-       "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4095252.jpg",
-       "Score": 50
-     },
-     {
-      "Description": "Reykjavik, Heimaeg, Djupivogur, Aberdeen, Edinburgh, Rotterdam",
-       "ElectionId": "2026_Vacation",
-       "Name": "Viking Trails and Celtic Origins (One-way)",
-       "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4104749.jpg",
-       "Score": 50
-     },
-     {
-      "Description": "Rotterdam, Bergen, Olden, Eidfjord, Nordfjord, Rotterdam",
-       "ElectionId": "2026_Vacation",
-       "Name": "Norwegian Fjords & Nordfjord (Round Trip)",
-       "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4095281.jpg",
-       "Score": 50
-     },
-     {
-      "Description": "Rotterdam, Kristiansand, Oslo, Sandnes, Skjolden Holla, Rotterdam",
-       "ElectionId": "2026_Vacation",
-       "Name": "Norwegian Fjords & Nordford (Round Trip)",
-       "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4104749.jpg",
-       "Score": 50
-     },
-     {
-      "Description": "Visit the windmills of Kinderdijk - 19 beautifully preserved 18th-century windmills, a UNESCO World Heritage Site. Walk past the windmills and tour inside one to see how these ingenious machines harness wind power. Great photo opportunities of the countryside. 3.75 hours.",
-       "ElectionId": "Rotterdam_Aug2_2026",
-       "Name": "Windmills of Kinderdijk",
-       "Score": 50
-     },
-     {
-      "Description": "Comprehensive 7-hour tour featuring Vigeland Sculpture Park with 200+ sculptures, Holmenkollen Ski Jump with fantastic Oslo views, buffet lunch, National Museum of Norwegian Maritime History, and Open-Air Folk Museum with 150 authentic buildings including 13th-century Gol Stave Church.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Best of Oslo with Lunch",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour bike tour through Oslo on car-free paths, parks and hidden streets. See the medieval castle, Royal Palace, and Frogner Sculpture Park. Fun and relaxed way to discover major sights with plenty of stops for photos. Moderate activity level.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Biking in Oslo",
-       "Score": 50
-     },
-     {
-      "Description": "Walking tour unveiling Oslo's famous sites including City Hall (where Nobel Peace Prize is held), Akershus Fortress (1299), Royal Palace, and Opera House. Charming mix of timber houses, neo-Classical buildings and modern architecture. 3 hours of walking.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Explore Oslo on Foot",
-       "Score": 50
-     },
-     {
-      "Description": "History Channel curated tour exploring Norway's maritime legacy. Visit three fascinating museums: Norwegian Maritime Museum, Kon-Tiki Museum (Thor Heyerdahl expeditions), and Fram Museum (world's most famous polar ship from 1892). Self-guided museum exploration. 5 hours.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Norway's Great Explorers",
-       "Score": 50
-     },
-     {
-      "Description": "4-hour tour combining panoramic city drive and electric boat cruise on inner Oslofjord. See Opera House, Royal Palace, and Akershus Fortress from land, then explore spectacular shoreline between islands with app-led audio guide. Café available on boat.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Oslo by Land & Sea",
-       "Score": 50
-     },
-     {
-      "Description": "45-minute drive to picturesque Drøbak, the narrowest point of Oslofjord. This charming 1700s town features tiny wooden houses, narrow streets, and Norway's only year-round Christmas shop. 90 minutes free time, then visit Vigeland Sculpture Park. 4.5 hours.",
-       "ElectionId": "Oslo_Aug4_2026",
-       "Name": "Vigeland Park & Drøbak",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour walking tour of charming Kristiansand, Norway's fifth-largest city. See areas spanning 370+ years of history, from the Gothic cathedral (1880s) and fortress (1670s) to the modern Kilden Performing Arts Center (2012). Visit fish market and Sørlandets Art Museum. 2.5 miles walking.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "Walk Through Historical Kristiansand",
-       "Score": 50
-     },
-     {
-      "Description": "Immerse in Norway's natural beauty with a 2-mile hike through Baneheia and Ravnedalen parks. Developed by General Wergeland in late 19th century, these areas feature winding paths, lookout points, and thriving flora/fauna. Snack of chocolate bar, flatbread, fruit and juice included. 3.5 hours.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "City & Nature Walk",
-       "Score": 50
-     },
-     {
-      "Description": "2-hour motorized boat cruise through Kristiansand's Randesund Archipelago (988 islands, islets and reefs). See whitewashed weekend properties, coastal dwellings, and Crown Prince Håkon's summer residence on Dvergsøya Island. Calm waters and warm, friendly landscape.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "Cruising the Archipelago",
-       "Score": 50
-     },
-     {
-      "Description": "4-hour adventure combining boat trip along island-speckled coast and visit to Lillesand, the region's most beautiful town. Features white-painted 18th/19th-century timber houses with sheltered harbor. Free time to explore this 'Jewel of Sorlandet' before scenic coastal road return.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "Lillesand: Jewel of Sorlandet",
-       "Score": 50
-     },
-     {
-      "Description": "5-hour drive to Norway's oldest lighthouse, Lindesnes (built 1655), on the southernmost tip of mainland Norway. Tour the National Lighthouse Museum, climb to top for fantastic coastal views, enjoy home-baked muffin with coffee/tea. Dramatic landscape where weather and nature converge.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "Norway's Southernmost Lighthouse",
-       "Score": 50
-     },
-     {
-      "Description": "Thrilling 5.5-hour white water rafting on the Otra River through Setesdal Valley. Features Class III and IV rapids ideal for novice and experienced rafters. Each raft holds 5-8 guests plus guide. Includes wetsuit, windproof jacket, helmet and life vest. Must be able to swim.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "River Rafting Adventure",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour vintage railway journey recreating turn-of-century rail travel. Board narrow-gauge Setesdal Vintage Railway (founded 1896) with restored 1894 locomotive. Snake through wild countryside paralleling Otra River, showcasing lakes, hills and farms. From Grovane to Røyknes.",
-       "ElectionId": "Kristiansand_Aug5_2026",
-       "Name": "Setesdal Vintage Railway",
-       "Score": 50
-     },
-     {
-      "Description": "Scenic boat cruise to Helgøy Island, home to one of Norway's most beautiful and historic apple farms. Wander lush orchards with fragrant blossoms and ripe fruit, learn generations of apple-growing tradition, taste locally harvested apples, cider and homemade delicacies. Experience Norwegian hospitality. 3 hours.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Helgøy Island Fruit Farm Cruise",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour panoramic drive from city center across bridge to nearby islands. Pass Breiavannet lake, Stavanger Cathedral (1125), Iron-Age Farm at Ullandhaug, Jaeren's sandy beaches, and Sola Church ruins (12th century). Photo stop at Hafrsfjord where Vikings fought historic battle 1000 years ago.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Easy Stavanger",
-       "Score": 50
-     },
-     {
-      "Description": "Immersive foodie tour savoring authentic Norwegian tastes in Sandnes. Visit Sirkus Renaa Café (owned by three-Michelin-star family) for finest croissants, breads and tindvedosteterte. Stop at local chocolate factory. Experience local food scene with guide determining day's tastes. 3 hours, ends in town.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Foodie Flavors of Sandnes",
-       "Score": 50
-     },
-     {
-      "Description": "4-hour high-speed RIB adventure through Stavanger Archipelago to spectacular Lysefjord. See vacation homes, remote spots, and immensely famous Pulpit Rock dominating the fjord. Entertaining commentary from RIB captain with wildlife viewing opportunities. Survival suits provided. Bumpy ride.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Lysefjord Pulpit Rock by RIB",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour boat cruise through Stavanger Archipelago with guide pointing out attractions. Cruise to splendid Lysefjord to see Pulpit Rock promontory jutting 1,500+ feet above sea. Stop en route for coffee and waffles served Norwegian-style with sour cream and jam. Water as deep as mountains are high.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Lysefjord Pulpit Rock Cruise",
-       "Score": 50
-     },
-     {
-      "Description": "History Channel partnership journey through centuries of Norwegian history. See Swords in Rock Monument (30+ feet, commemorating 872 AD Battle of Hafrsfjord), Viking House VR experience, ancient Doomstones stone circle, Iron Age farm, Petroleum Museum, and stroll through Old Stavanger's wooden houses. 4.5 hours.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Stavanger Old & New (History Channel)",
-       "Score": 50
-     },
-     {
-      "Description": "4-hour tour visiting Stavanger Maritime Museum (millennium-long relationship with sea) and Norwegian Petroleum Museum (offshore operations as Norway's most important industry). Learn cultural, economic and social effects of oil industry. Walk through city center between museums.",
-       "ElectionId": "Stavanger_Aug6_2026",
-       "Name": "Stavanger's Maritime Culture",
-       "Score": 50
-     },
-     {
-      "Description": "Chronological food journey at Fjordstova in Skjolden's center, tasting Norwegian specialties from Viking roots to present day. Try rømmegraut (like oatmeal), brunost (brown cheese), and fresh seasonal samples. Learn about region through guide commentary and audiovisual presentation. Fjord and mountain views. 2 hours.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Culinary Viking to Today",
-       "Score": 50
-     },
-     {
-      "Description": "Comprehensive 7-hour tour through Jotunheimen National Park (1,351 sq miles). See ice-blue Lake Fantesteinsvatnet, Hurrungane mountains (27 of Norway's highest peaks), stop at 4,700-ft Sognefjell Mountain Pass. Visit Lom's magnificent stave church (AD 1158), Norwegian Mountain Museum with mammoth model, and Åsafossen Waterfall. Lunch included.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Best of Skjolden",
-       "Score": 50
-     },
-     {
-      "Description": "4-hour panoramic drive along Sognefjord through Jostedal Valley with traditional agriculture. See Jostedal Glacier (largest ice field in mainland Norway, remnant from 18,000 years ago). Visit Breheim Glacier Center with exhibits, shop, café and distant view of Nigardsbreen Glacier.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Jostedal Glacier National Park",
-       "Score": 50
-     },
-     {
-      "Description": "Scenic 4-hour drive designed for minimal walking but maximum photo opportunities. Travel Sognefjellet National Tourist Road to 4,700-ft elevation (Northern Europe's highest pass). See ancient stone pyramids (varde), hairpin curves past Fortun village, and 24 colossal Jotunheimen peaks over 6,560 ft. Norwegian waffles at mountain lodge.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Jotunheimen & Sognefjell Pass",
-       "Score": 50
-     },
-     {
-      "Description": "Family-friendly 2-hour kayak safari through tranquil emerald waters of Lustrafjord. Paddle beneath towering mountains, past cascading waterfalls, encounter seals, porpoises and seabirds. Breathtaking views of Molden peak. Learn about Skjolden's Viking roots. No prior experience needed, must know how to swim.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Kayak Hidden Wonders",
-       "Score": 50
-     },
-     {
-      "Description": "3.5-hour bike & hike adventure through Breheimen National Park's peaceful Mørkid Valley. 4.3 miles (1 hour) cycling learning culture and history, then 30-minute hike on rocky trail to dramatic Drivande Waterfall. Snack of flatbread and cured meats. Total ascent 1,050 feet. Minimum age 8.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Mørkid Valley Bike & Hike",
-       "Score": 50
-     },
-     {
-      "Description": "Exhilarating 1.75-hour RIB ride through magnificent Lustrafjord. Speed past small fjord farms from 100 years ago, see Feigumfossen Waterfall cascading 656 feet. Short stops for guide commentary about natural landscape and local history. Locally-produced fruit juice included. Survival suits provided.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "RIB Adventure",
-       "Score": 50
-     },
-     {
-      "Description": "3.5-hour tour visiting Norway's oldest and most decorated stave church - Urnes (built 1130), perched on Lustrafjord shores. Only Norwegian stave church recognized as UNESCO World Heritage Site. Also visit Ornes Shipyard (1975) learning Viking-era woodcrafting techniques. Return via narrow, winding Romantic Road.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Urnes Stave Church & Shipyard",
-       "Score": 50
-     },
-     {
-      "Description": "3-hour walking experience with lovable llamas on Simon Page's farm in Mørkid Valley. Walk across old footbridge over Fortun River to farm growing raspberries with old Norse sheep breed. Team up with a llama for leisurely riverbank walk. Hot/cold beverage and cookies. 2.5 hours total walking.",
-       "ElectionId": "Skjolden_Aug7_2026",
-       "Name": "Walking with Llamas",
-       "Score": 50
-     }
+        "Description": "Rotterdam, Invergordon, IsaFjordur, AkureyriseydisFjordur, Reykjavik",
+        "ElectionId": "2026_Vacation",
+        "Name": "Fjords of Iceland (One-way)",
+        "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4095252.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Reykjavik, Heimaeg, Djupivogur, Aberdeen, Edinburgh, Rotterdam",
+        "ElectionId": "2026_Vacation",
+        "Name": "Viking Trails and Celtic Origins (One-way)",
+        "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4104749.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Rotterdam, Bergen, Olden, Eidfjord, Nordfjord, Rotterdam",
+        "ElectionId": "2026_Vacation",
+        "Name": "Norwegian Fjords & Nordfjord (Round Trip)",
+        "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4095281.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Rotterdam, Kristiansand, Oslo, Sandnes, Skjolden Holla, Rotterdam",
+        "ElectionId": "2026_Vacation",
+        "Name": "Norwegian Fjords & Nordford (Round Trip)",
+        "Image_link": "https://ttcm.s3.amazonaws.com/Images/Maps/euro/euro_4104749.jpg",
+        "Score": 50
+    },
+    {
+        "Description": "Visit the windmills of Kinderdijk - 19 beautifully preserved 18th-century windmills, a UNESCO World Heritage Site. Walk past the windmills and tour inside one to see how these ingenious machines harness wind power. Great photo opportunities of the countryside. 3.75 hours.",
+        "ElectionId": "Rotterdam_Aug2_2026",
+        "Name": "Windmills of Kinderdijk",
+        "Score": 50
+    },
+    {
+        "Description": "Comprehensive 7-hour tour featuring Vigeland Sculpture Park with 200+ sculptures, Holmenkollen Ski Jump with fantastic Oslo views, buffet lunch, National Museum of Norwegian Maritime History, and Open-Air Folk Museum with 150 authentic buildings including 13th-century Gol Stave Church.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Best of Oslo with Lunch",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour bike tour through Oslo on car-free paths, parks and hidden streets. See the medieval castle, Royal Palace, and Frogner Sculpture Park. Fun and relaxed way to discover major sights with plenty of stops for photos. Moderate activity level.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Biking in Oslo",
+        "Score": 50
+    },
+    {
+        "Description": "Walking tour unveiling Oslo's famous sites including City Hall (where Nobel Peace Prize is held), Akershus Fortress (1299), Royal Palace, and Opera House. Charming mix of timber houses, neo-Classical buildings and modern architecture. 3 hours of walking.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Explore Oslo on Foot",
+        "Score": 50
+    },
+    {
+        "Description": "History Channel curated tour exploring Norway's maritime legacy. Visit three fascinating museums: Norwegian Maritime Museum, Kon-Tiki Museum (Thor Heyerdahl expeditions), and Fram Museum (world's most famous polar ship from 1892). Self-guided museum exploration. 5 hours.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Norway's Great Explorers",
+        "Score": 50
+    },
+    {
+        "Description": "4-hour tour combining panoramic city drive and electric boat cruise on inner Oslofjord. See Opera House, Royal Palace, and Akershus Fortress from land, then explore spectacular shoreline between islands with app-led audio guide. Café available on boat.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Oslo by Land & Sea",
+        "Score": 50
+    },
+    {
+        "Description": "45-minute drive to picturesque Drøbak, the narrowest point of Oslofjord. This charming 1700s town features tiny wooden houses, narrow streets, and Norway's only year-round Christmas shop. 90 minutes free time, then visit Vigeland Sculpture Park. 4.5 hours.",
+        "ElectionId": "Oslo_Aug4_2026",
+        "Name": "Vigeland Park & Drøbak",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour walking tour of charming Kristiansand, Norway's fifth-largest city. See areas spanning 370+ years of history, from the Gothic cathedral (1880s) and fortress (1670s) to the modern Kilden Performing Arts Center (2012). Visit fish market and Sørlandets Art Museum. 2.5 miles walking.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "Walk Through Historical Kristiansand",
+        "Score": 50
+    },
+    {
+        "Description": "Immerse in Norway's natural beauty with a 2-mile hike through Baneheia and Ravnedalen parks. Developed by General Wergeland in late 19th century, these areas feature winding paths, lookout points, and thriving flora/fauna. Snack of chocolate bar, flatbread, fruit and juice included. 3.5 hours.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "City & Nature Walk",
+        "Score": 50
+    },
+    {
+        "Description": "2-hour motorized boat cruise through Kristiansand's Randesund Archipelago (988 islands, islets and reefs). See whitewashed weekend properties, coastal dwellings, and Crown Prince Håkon's summer residence on Dvergsøya Island. Calm waters and warm, friendly landscape.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "Cruising the Archipelago",
+        "Score": 50
+    },
+    {
+        "Description": "4-hour adventure combining boat trip along island-speckled coast and visit to Lillesand, the region's most beautiful town. Features white-painted 18th/19th-century timber houses with sheltered harbor. Free time to explore this 'Jewel of Sorlandet' before scenic coastal road return.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "Lillesand: Jewel of Sorlandet",
+        "Score": 50
+    },
+    {
+        "Description": "5-hour drive to Norway's oldest lighthouse, Lindesnes (built 1655), on the southernmost tip of mainland Norway. Tour the National Lighthouse Museum, climb to top for fantastic coastal views, enjoy home-baked muffin with coffee/tea. Dramatic landscape where weather and nature converge.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "Norway's Southernmost Lighthouse",
+        "Score": 50
+    },
+    {
+        "Description": "Thrilling 5.5-hour white water rafting on the Otra River through Setesdal Valley. Features Class III and IV rapids ideal for novice and experienced rafters. Each raft holds 5-8 guests plus guide. Includes wetsuit, windproof jacket, helmet and life vest. Must be able to swim.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "River Rafting Adventure",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour vintage railway journey recreating turn-of-century rail travel. Board narrow-gauge Setesdal Vintage Railway (founded 1896) with restored 1894 locomotive. Snake through wild countryside paralleling Otra River, showcasing lakes, hills and farms. From Grovane to Røyknes.",
+        "ElectionId": "Kristiansand_Aug5_2026",
+        "Name": "Setesdal Vintage Railway",
+        "Score": 50
+    },
+    {
+        "Description": "Scenic boat cruise to Helgøy Island, home to one of Norway's most beautiful and historic apple farms. Wander lush orchards with fragrant blossoms and ripe fruit, learn generations of apple-growing tradition, taste locally harvested apples, cider and homemade delicacies. Experience Norwegian hospitality. 3 hours.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Helgøy Island Fruit Farm Cruise",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour panoramic drive from city center across bridge to nearby islands. Pass Breiavannet lake, Stavanger Cathedral (1125), Iron-Age Farm at Ullandhaug, Jaeren's sandy beaches, and Sola Church ruins (12th century). Photo stop at Hafrsfjord where Vikings fought historic battle 1000 years ago.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Easy Stavanger",
+        "Score": 50
+    },
+    {
+        "Description": "Immersive foodie tour savoring authentic Norwegian tastes in Sandnes. Visit Sirkus Renaa Café (owned by three-Michelin-star family) for finest croissants, breads and tindvedosteterte. Stop at local chocolate factory. Experience local food scene with guide determining day's tastes. 3 hours, ends in town.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Foodie Flavors of Sandnes",
+        "Score": 50
+    },
+    {
+        "Description": "4-hour high-speed RIB adventure through Stavanger Archipelago to spectacular Lysefjord. See vacation homes, remote spots, and immensely famous Pulpit Rock dominating the fjord. Entertaining commentary from RIB captain with wildlife viewing opportunities. Survival suits provided. Bumpy ride.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Lysefjord Pulpit Rock by RIB",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour boat cruise through Stavanger Archipelago with guide pointing out attractions. Cruise to splendid Lysefjord to see Pulpit Rock promontory jutting 1,500+ feet above sea. Stop en route for coffee and waffles served Norwegian-style with sour cream and jam. Water as deep as mountains are high.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Lysefjord Pulpit Rock Cruise",
+        "Score": 50
+    },
+    {
+        "Description": "History Channel partnership journey through centuries of Norwegian history. See Swords in Rock Monument (30+ feet, commemorating 872 AD Battle of Hafrsfjord), Viking House VR experience, ancient Doomstones stone circle, Iron Age farm, Petroleum Museum, and stroll through Old Stavanger's wooden houses. 4.5 hours.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Stavanger Old & New (History Channel)",
+        "Score": 50
+    },
+    {
+        "Description": "4-hour tour visiting Stavanger Maritime Museum (millennium-long relationship with sea) and Norwegian Petroleum Museum (offshore operations as Norway's most important industry). Learn cultural, economic and social effects of oil industry. Walk through city center between museums.",
+        "ElectionId": "Stavanger_Aug6_2026",
+        "Name": "Stavanger's Maritime Culture",
+        "Score": 50
+    },
+    {
+        "Description": "Chronological food journey at Fjordstova in Skjolden's center, tasting Norwegian specialties from Viking roots to present day. Try rømmegraut (like oatmeal), brunost (brown cheese), and fresh seasonal samples. Learn about region through guide commentary and audiovisual presentation. Fjord and mountain views. 2 hours.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Culinary Viking to Today",
+        "Score": 50
+    },
+    {
+        "Description": "Comprehensive 7-hour tour through Jotunheimen National Park (1,351 sq miles). See ice-blue Lake Fantesteinsvatnet, Hurrungane mountains (27 of Norway's highest peaks), stop at 4,700-ft Sognefjell Mountain Pass. Visit Lom's magnificent stave church (AD 1158), Norwegian Mountain Museum with mammoth model, and Åsafossen Waterfall. Lunch included.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Best of Skjolden",
+        "Score": 50
+    },
+    {
+        "Description": "4-hour panoramic drive along Sognefjord through Jostedal Valley with traditional agriculture. See Jostedal Glacier (largest ice field in mainland Norway, remnant from 18,000 years ago). Visit Breheim Glacier Center with exhibits, shop, café and distant view of Nigardsbreen Glacier.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Jostedal Glacier National Park",
+        "Score": 50
+    },
+    {
+        "Description": "Scenic 4-hour drive designed for minimal walking but maximum photo opportunities. Travel Sognefjellet National Tourist Road to 4,700-ft elevation (Northern Europe's highest pass). See ancient stone pyramids (varde), hairpin curves past Fortun village, and 24 colossal Jotunheimen peaks over 6,560 ft. Norwegian waffles at mountain lodge.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Jotunheimen & Sognefjell Pass",
+        "Score": 50
+    },
+    {
+        "Description": "Family-friendly 2-hour kayak safari through tranquil emerald waters of Lustrafjord. Paddle beneath towering mountains, past cascading waterfalls, encounter seals, porpoises and seabirds. Breathtaking views of Molden peak. Learn about Skjolden's Viking roots. No prior experience needed, must know how to swim.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Kayak Hidden Wonders",
+        "Score": 50
+    },
+    {
+        "Description": "3.5-hour bike & hike adventure through Breheimen National Park's peaceful Mørkid Valley. 4.3 miles (1 hour) cycling learning culture and history, then 30-minute hike on rocky trail to dramatic Drivande Waterfall. Snack of flatbread and cured meats. Total ascent 1,050 feet. Minimum age 8.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Mørkid Valley Bike & Hike",
+        "Score": 50
+    },
+    {
+        "Description": "Exhilarating 1.75-hour RIB ride through magnificent Lustrafjord. Speed past small fjord farms from 100 years ago, see Feigumfossen Waterfall cascading 656 feet. Short stops for guide commentary about natural landscape and local history. Locally-produced fruit juice included. Survival suits provided.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "RIB Adventure",
+        "Score": 50
+    },
+    {
+        "Description": "3.5-hour tour visiting Norway's oldest and most decorated stave church - Urnes (built 1130), perched on Lustrafjord shores. Only Norwegian stave church recognized as UNESCO World Heritage Site. Also visit Ornes Shipyard (1975) learning Viking-era woodcrafting techniques. Return via narrow, winding Romantic Road.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Urnes Stave Church & Shipyard",
+        "Score": 50
+    },
+    {
+        "Description": "3-hour walking experience with lovable llamas on Simon Page's farm in Mørkid Valley. Walk across old footbridge over Fortun River to farm growing raspberries with old Norse sheep breed. Team up with a llama for leisurely riverbank walk. Hot/cold beverage and cookies. 2.5 hours total walking.",
+        "ElectionId": "Skjolden_Aug7_2026",
+        "Name": "Walking with Llamas",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Baarle-Nassau border enclaves                   Tourist info @ Center Singel 1",
+        "Description": "Train: From Rotterdam to Breda (Centraal Station); Bus: 375 (132) every 30 min to Baarle-Nassau; Stops Baarle-Nassau, St. Jan Straat;",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Trams",
+        "Description": "",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Delfshaven Oude of Pelgrimvaderskerk (Pilgrim Fathers Church)  Aelbrechtskolk 22",
+        "Description": "The Pilgrims prayed for the last time at this church (1417) bf leaving for America aboard the Speedwell 8/1/1620, transferred to Mayflower in England; take tram line 4 to Marconiplein from Centraal, off at Delfshaven",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Architecture",
+        "Description": "vertical city, largest building, forest of cube houses, pencil shaped building, horseshoe shaped covered market, ethereal cloud-like bld National History Museum",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Harbor",
+        "Description": "one of bases for Dutch East India Company; canals constructed in 1800s; bombed by germans in WWII",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Markthal Rotterdam (food market)",
+        "Description": "inverted u-shaped market hall",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Maritiem Museum Rotterdam",
+        "Description": "also includes entry to historic vessels and cranes moored in the Leuvehaven to 4 pm",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam, Museum Boijmans van Beuningen",
+        "Description": "fine arts; Rubens, Rembrandt, Monet, Degas, Van Gogh, Picasso, Miró, Bacon",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Euromast",
+        "Description": "185 M high, 360° views, rotating glass elevator / water taxi: watertaxirotterdam.nl",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Pleinbloscoop Rotterdam, Museumpark",
+        "Description": "film festival",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Whisper Boat",
+        "Description": "tours of canals - depart from historic fishmarket (Vismarkt)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Kinderdjik                                        fast ferry 202 from Rotterdam Erasmusbrug",
+        "Description": "empty marshes and waterways with 19 historic windmills; 2 museums, visitor center; take boat Waterbus",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Rotterdam Centraal Station to Amsterdam",
+        "Description": "train; bikes have right of way; bring cash; check return tax for 50 Euros per day = belastingdienst.nl; 10% tips; coffeehouse = pot/cafe = food, no smoke",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam South - Van Gogh Museum",
+        "Description": "Get tix online - strict 30 min. time slots / Open to 9 pm F Sa ??? / then Canals, cheese shops / etix; less crowds late afternoon after 3 pm, go Su-R",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam South - Rijks Museum",
+        "Description": "Get tix online / Open to 10 pm / then park; less crowds before 10 am & after 3 pm, go Su-R; line to get in / floor 1 & 2 best, floor 0 Asian collection Museumplein has skatepark",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam South - Vondelpark",
+        "Description": "ponds, rose garden, Picasso The Fish sculpture; bikes good; play at open air theater; restaurants at western edge: Amstelveenseweg (1865)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam South - Riekermolen             westbank of Amstel river, south of Amstel park",
+        "Description": "Windmill (1636) sketched by Rembrandt, see statue",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Southern Canal Ring",
+        "Description": "cruises; stroll Grand Golden Bend-nice houses; Pastry: Patisserie Holtkamp, order croquettes (kroketten)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Southern Canal Ring Reguliersgracht",
+        "Description": "Canal: (canal of 7 bridges), best on boat; at night lit up",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Southern Canal Ring Magere Brug    btwn Kerkstraat & Nieuwe Kerkstraat",
+        "Description": "Bridge on Amstel (1670) Nine arched “Skinny Bridge”; hand operated section to let boats through; at night, 1200 tiny lights; feel it sway; Nearby Amstel Locks (Amstelsluizen)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Southern Canal Ring Bloemenmarkt",
+        "Description": "bulbs; floating flower market, now on pilings; bulbs year round (1860)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Southern Canal Ring Blauwbrug           btwn Waterlooplein & Amstelstraat",
+        "Description": "Bridge on Amstel (1884) highly decorated stone bridge - fish sculptures & ornate street lamps",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Canals/Locks",
+        "Description": "water flushes in from IJsselmeer, out to sea at Amstelsluizen (1674) sluices on Amstel river near Koninklijk Theatre Carre; Tours depart from Centraal Station, Damrak, Rokin, & opposite Rijksmuseum (canal bus). Look for open seating area boat. At night lights but more $. Those Dam Boat Guys (Jordaan), Canal Bus (hop on/off), Blue Boat Company",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam De Pijp - Albert Cuypmarkt",
+        "Description": "largest street bazaar; every day except Sun; brunch Bakers & Roasters",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Western Canal Ring Canals",
+        "Description": "Oldest Bridge on Singel - Torensluis (1648);",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Western Canal Ring",
+        "Description": "Prinsengracht: Nice area; lunch: Bistro Bj ons;",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Western Canal Ring Het Grachtenhuis",
+        "Description": "Canal Museum, how it was built, model of Amsterdam (takes 45 min)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Jordaan Pianola Museum",
+        "Description": "jazz and classical tunes on pianolas (1900s), tours, 12 on display, music rolls and player pipe organ",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Jordaan Houseboat Museum",
+        "Description": "23 M sailing barge (1914); cash only",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Jordaan Tulip Museum",
+        "Description": "history, bulbs, vases, techniques",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Jordaan Noordermarkt",
+        "Description": "Market: since the 1600s; antiques and organic fare; Sat includes farmer’s market",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Jordaan Het Oud-Hollandsch Snoepwinkeltje",
+        "Description": "Tues- Sat liquorice zoete(sweet) or zoute (salty)",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Nieuwmarkt, Plantage, Eastern Islands Het Scheepvaartmuseum",
+        "Description": "maritime, ancient globes, ship figureheads, replica 700 tonne Amsterdam Dutch East India Company fleet schooner to climb in; Royal barge in boathouse; 17th century waterfront bld; Golden Age maps;",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam Nieuwmarkt, Plantage, Eastern Islands - Hortus Botanicus",
+        "Description": "botanical gardens (1638) plants from Dutch Trading Ships; butterfly gardens",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam Nieuwmarkt, Plantage, Eastern Islands - Narrow house                                     Oude Hoogstraat 22",
+        "Description": "2.02 M wide, 5 M deep house",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Nieuwmarkt, Plantage, Eastern Islands Museum het Rembranthuis",
+        "Description": "CLOSED??? / Rembrants’ studio",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Nieuwmarkt, Plantage, Eastern Islands Waterlooplein",
+        "Description": "Flea Market, porcelain teapots, etc",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam Old Center/Medieval Ctr/Red Light - Medieval Center",
+        "Description": "Begijnhof Church (1671)- open door to secret courtyard & gardens tiny houses / Houten Huys (1465) oldest wooden house / Spui Square cobblestone (SPOW) filled in 1882",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam Old Center - Dam Square",
+        "Description": "Amsterdam founded in 1270 here; 900 yrs of commerce: Royal Palace (1665) (Koninklijk Paleis); Nieuwe Kerk, & Natl Monument",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam - Rokin Metro Station",
+        "Description": "Amsterdam Noord & World Trade Centre Noord/Zuidlijn (north/south) metro line, 134,000 archeological finds, 9,500 on display from 2400 BC",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Amsterdam  Oosterpark & East  of the Amstel Muiden Castle",
+        "Description": "(1280) outside Amsterdam, 13th century castle with moat, drawbridge, and activities for kids; train from Central or ferry from IJburg; red brick castle; lock on IJsselmeer;",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "DoubleTree by Hilton Amsterdam - NDSM Wharf, Plein 28",
+        "Description": "ferry to Amsterdam Centraal train station, waterfront",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Netherlands - Hoge Veluwe National Park, Kroller-Muller Museum",
+        "Description": "Excellent are collection of Van Goghs and sculpture garden; Free bikes; forests, sand dunes, marshes, ponds",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Gouda Cheese Market",
+        "Description": "Check cheese markets on main squares Thursdays Kaasstad & weighing house 10 am - 12:30 pm",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Gouda Sint Janskerk",
+        "Description": "Largest cache of in-situ 16th century stained glass in the world; canal ringed historic center 5 minutes walk from train station",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Gouda Kamphulsen Siroopwafels",
+        "Description": "Strop waffle production line - Local creation",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Alkmaar Kaasmarkt",
+        "Description": "Fri am/ Centuries old cheese market -",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Alkmaar Hollands Kaassmusum",
+        "Description": "(Dutch Cheese Museum)in Waaggebouw built as chapel in 14th centruy, weighing house/ note mechanical tower carillon with jousting knights",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Alkmaar Grote Kerk",
+        "Description": "organs, “Little Swallow Organ” (1511) played noon when church is open",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Medemblik Stoommachine Museum       Oosterdijk 4",
+        "Description": "Steam engine museum Museum Stoomtrain departs from old train station for Hoorn Check schedule for running engines",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Edam Kaasmarkt",
+        "Description": "Cheese market, smaller than Alkmaar / cobblestone streets, hand-operated draw bridges, canals",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Edam Fluisterbootjes tourist office",
+        "Description": "rent boats; Whisper Boats; small electric boat thru canals, up to 7 people",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Edam Edams Museum",
+        "Description": "oldest building with artifacts built 1540, floating cellar that rises and falls with river; Tall girl 9’ 3”",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Edam Gestam",
+        "Description": "sample 30 cheeses; Sat",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Delft - Markt",
+        "Description": "(from Rotterdam -lockers at train station??) one of largest in Europe: R Market; town founded 1100; china from 17th century; canals, museums, cafes; beauty of the Golden Age; Visitor office for map",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Delft - pottery",
+        "Description": "Royal Delft, De Deltse Pauw, De Candelaer, De Blauwe Tulp; can see them painting china",
+        "Score": 50
+    },
+    {
+        "ElectionId": "PostCruise2026",
+        "Name": "Haarlem - Grote Kerk van St Bavo                  Oude Groenmarkt 22",
+        "Description": "50 M Steeple; Muller organ, one of biggest, 30 M high, 5000 pipes (1738); played by Mozart & Handel. Plays occasionally Sun 2:30 or R 4:00 / Check Schedule",
+        "Score": 50
+    }
 ]
