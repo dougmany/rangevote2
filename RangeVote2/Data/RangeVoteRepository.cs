@@ -1698,7 +1698,7 @@ namespace RangeVote2.Data
                 new { UserId = userId.ToString() }
             );
 
-            return theme ?? "cow";
+            return theme ?? "plain";
         }
     }
 

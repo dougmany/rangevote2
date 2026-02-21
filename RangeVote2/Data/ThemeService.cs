@@ -101,28 +101,28 @@ namespace RangeVote2.Data
             },
             ["plain"] = new Dictionary<string, string>
             {
-                ["animal"] = "📝",
-                ["group"] = "group",
-                ["group_possessive"] = "group's",
-                ["place"] = "room",
-                ["place_plural"] = "ballots",
+                ["animal"] = "🗳️",
+                ["group"] = "organization",
+                ["group_possessive"] = "organization's",
+                ["place"] = "poll",
+                ["place_plural"] = "polls",
                 ["action_vote"] = "vote",
                 ["action_voting"] = "voting",
-                ["join_action"] = "Join Now",
-                ["enter_action"] = "Login",
-                ["leave_action"] = "Logout",
-                ["my_places"] = "My Ballots",
-                ["open_area"] = "Public Ballots",
-                ["my_groups"] = "My Groups",
-                ["tagline"] = "Democratic range voting",
-                ["loading"] = "Loading ballot...",
-                ["closed"] = "Voting has ended",
+                ["join_action"] = "Register",
+                ["enter_action"] = "Sign In",
+                ["leave_action"] = "Sign Out",
+                ["my_places"] = "My Polls",
+                ["open_area"] = "Public Polls",
+                ["my_groups"] = "My Organizations",
+                ["tagline"] = "Professional range voting platform",
+                ["loading"] = "Loading poll...",
+                ["closed"] = "Poll closed",
                 ["save_vote"] = "Submit Vote",
                 ["results"] = "Results",
-                ["create_action"] = "Create Ballot",
+                ["create_action"] = "Create Poll",
                 ["member"] = "member",
                 ["members"] = "members",
-                ["voting_action"] = "making decisions"
+                ["voting_action"] = "voting"
             }
         };
 
@@ -149,13 +149,13 @@ namespace RangeVote2.Data
             try
             {
                 var theme = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "theme");
-                _cachedTheme = string.IsNullOrEmpty(theme) ? "cow" : theme;
+                _cachedTheme = string.IsNullOrEmpty(theme) ? "plain" : theme;
                 return _cachedTheme;
             }
             catch
             {
-                // If JS interop fails, default to cow
-                _cachedTheme = "cow";
+                // If JS interop fails, default to plain
+                _cachedTheme = "plain";
                 return _cachedTheme;
             }
         }

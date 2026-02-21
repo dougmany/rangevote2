@@ -8,13 +8,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
-    <link id="favicon-svg" rel="icon" type="image/svg+xml" href="favicon-cow.svg" />
+    <link id="favicon-svg" rel="icon" type="image/svg+xml" href="favicon-plain.svg" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <script>
         (function () {
             var themes = ['cow', 'deer', 'bison', 'plain'];
             function setFavicon(theme) {
-                var t = themes.includes(theme) ? theme : 'cow';
+                var t = themes.includes(theme) ? theme : 'plain';
                 document.getElementById('favicon-svg').href = 'favicon-' + t + '.svg';
             }
             setFavicon(localStorage.getItem('theme'));
