@@ -6,9 +6,12 @@
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
 @inject IRangeVoteRepository Repository
+@inject IVoteChainService ChainService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
 
 @if (isLoading)
 {
@@ -110,26 +113,22 @@ else if (choices.Any())
                     {
                         <div class="vote-detail-image-placeholder">🌾</div>
                     }
-                </div>
-
-                <div class="vote-detail-body">
                     <div class="vote-detail-rank">
                         @if (GetRank(SelectedChoice.Id) == 1) { <span>🥇</span> }
                         else if (GetRank(SelectedChoice.Id) == 2) { <span>🥈</span> }
                         else if (GetRank(SelectedChoice.Id) == 3) { <span>🥉</span> }
-                        Rank #@GetRank(SelectedChoice.Id)
+                        #@GetRank(SelectedChoice.Id)
                     </div>
+                    <div class="vote-detail-score-overlay">@((SelectedChoice.Score / 10.0).ToString("N1"))</div>
+                </div>
 
+                <div class="vote-detail-body">
                     <h2 class="vote-detail-name">@SelectedChoice.Name</h2>
 
                     @if (!string.IsNullOrWhiteSpace(SelectedChoice.Description))
                     {
                         <div class="vote-detail-description">@SelectedChoice.Description</div>
                     }
-
-                    <div class="vote-detail-score-section">
-                        <div class="vote-detail-score-value">@((SelectedChoice.Score / 10.0).ToString("N1"))</div>
-                    </div>
 
                     @if (!isClosed)
                     {
@@ -166,21 +165,54 @@ else if (choices.Any())
         <div class="alert alert-info mt-3">@message</div>
     }
 
-    @if (!isClosed)
+    @if (showReceipt && receiptViewModel != null)
+    {
+        <div class="card mt-4 border-success">
+            <div class="card-body">
+                <h5 class="card-title">Vote Receipt</h5>
+                <p class="card-text">Your votes have been recorded and chained to the immutable ledger.</p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Receipt Hash:</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <code class="bg-light p-2 rounded flex-grow-1 text-break" style="font-size: 0.85rem;">@receiptViewModel.ReceiptHash</code>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="CopyReceipt">Copy</button>
+                    </div>
+                </div>
+
+                <p class="text-muted mb-1">
+                    <strong>@receiptViewModel.BallotName</strong> &mdash;
+                    @receiptViewModel.CandidatesVotedOn candidates scored at
+                    @receiptViewModel.IssuedAt.ToString("g") UTC
+                </p>
+                <p class="text-muted small">
+                    Save this receipt hash. You can use it to verify your vote was recorded correctly at any time.
+                </p>
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/audit?ballotId=@currentDecisionId" class="btn btn-outline-primary">Verify Chain Integrity</a>
+                    <a href="/decisions" class="btn btn-primary">Back to Pastures</a>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!isClosed)
     {
         <div class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary btn-lg" @onclick="SaveScores" disabled="@isSaving">
-                @if (isSaving)
-                {
-                    <span>Chewing...</span>
-                }
-                else
-                {
-                    <span>Save My Grazing 🐄</span>
-                }
-            </button>
             <a href="/decisions" class="btn btn-secondary btn-lg">Back to Pastures</a>
         </div>
+
+        <button class="vote-fab" @onclick="RecordToChain" disabled="@isSaving"
+                title="Record votes to the blockchain">
+            @if (isSaving)
+            {
+                <span>...</span>
+            }
+            else
+            {
+                <span>🐄 Vote</span>
+            }
+        </button>
     }
     else
     {
@@ -217,6 +249,8 @@ else if (choices.Any())
     private bool isLoading = true;
     private bool isSaving = false;
     private bool isClosed = false;
+    private bool showReceipt = false;
+    private VoteReceiptViewModel? receiptViewModel;
     private DateTime? closeDate;
     private string decisionName = "Graze";
     private string? decisionDescription;
@@ -347,25 +381,41 @@ else if (choices.Any())
                       .FindIndex(c => c.Id == choiceId) + 1;
     }
 
-    void IncrementScore(Guid choiceId, int amount)
+    async Task IncrementScore(Guid choiceId, int amount)
     {
         var choice = choices.FirstOrDefault(c => c.Id == choiceId);
         if (choice != null && choice.Score < 99)
         {
             choice.Score = Math.Min(99, choice.Score + amount);
+            await SaveScoresLocally();
         }
     }
 
-    void DecrementScore(Guid choiceId, int amount)
+    async Task DecrementScore(Guid choiceId, int amount)
     {
         var choice = choices.FirstOrDefault(c => c.Id == choiceId);
         if (choice != null && choice.Score > 0)
         {
             choice.Score = Math.Max(0, choice.Score - amount);
+            await SaveScoresLocally();
         }
     }
 
-    async Task SaveScores()
+    async Task SaveScoresLocally()
+    {
+        if (!ballotId.HasValue) return;
+        try
+        {
+            var scores = choices.ToDictionary(c => c.Id, c => c.Score);
+            await Repository.SaveVotesAsync(currentDecisionId, userId, scores);
+        }
+        catch (Exception ex)
+        {
+            message = $"Error saving: {ex.Message}";
+        }
+    }
+
+    async Task RecordToChain()
     {
         if (isClosed)
         {
@@ -376,16 +426,19 @@ else if (choices.Any())
         try
         {
             isSaving = true;
-            message = "Chewing on it...";
+            message = "Recording to the chain...";
 
-            // New decision system
             if (ballotId.HasValue)
             {
                 var scores = choices.ToDictionary(c => c.Id, c => c.Score);
                 await Repository.SaveVotesAsync(currentDecisionId, userId, scores);
-                NavigationManager.NavigateTo("/decisions");
+
+                receiptViewModel = await ChainService.RecordVotesAndGetReceiptAsync(
+                    currentDecisionId, userId, scores, decisionName);
+                showReceipt = true;
+                isSaving = false;
+                message = null;
             }
-            // Legacy system
             else if (!string.IsNullOrWhiteSpace(electionId) && candidates != null)
             {
                 await Repository.PutBallotAsync(new Ballot { Id = userId, Candidates = candidates }, electionId);
@@ -394,8 +447,17 @@ else if (choices.Any())
         }
         catch (Exception ex)
         {
-            message = $"Error saving: {ex.Message}";
+            message = $"Error recording: {ex.Message}";
             isSaving = false;
+        }
+    }
+
+    async Task CopyReceipt()
+    {
+        if (receiptViewModel != null)
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", receiptViewModel.ReceiptHash);
+            message = "Receipt hash copied to clipboard!";
         }
     }
 }

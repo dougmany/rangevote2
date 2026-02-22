@@ -239,6 +239,47 @@ namespace RangeVote2.Data
           connection.Execute("CREATE INDEX idx_votes_user ON votes(userid);");
           connection.Execute("CREATE INDEX idx_votes_candidate ON votes(candidateid);");
         }
+
+        // ========== VOTE INTEGRITY / HASH CHAIN TABLES ==========
+
+        if (!TableExists(connection, "vote_ledger"))
+        {
+          connection.Execute(
+            @"CREATE TABLE vote_ledger (
+              id VARCHAR(36) PRIMARY KEY NOT NULL,
+              ballotid VARCHAR(36) NOT NULL,
+              anonvoterid VARCHAR(16) NOT NULL,
+              candidateid VARCHAR(36) NOT NULL,
+              score INTEGER NOT NULL,
+              action VARCHAR(10) NOT NULL,
+              previousscore INTEGER,
+              sequencenumber BIGINT NOT NULL,
+              createdat TIMESTAMPTZ NOT NULL,
+              previoushash VARCHAR(64) NOT NULL,
+              entryhash VARCHAR(64) NOT NULL,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE,
+              FOREIGN KEY (candidateid) REFERENCES ballot_candidates(id) ON DELETE CASCADE
+            );"
+          );
+
+          connection.Execute("CREATE UNIQUE INDEX idx_vote_ledger_ballot_seq ON vote_ledger(ballotid, sequencenumber);");
+          connection.Execute("CREATE INDEX idx_vote_ledger_ballot ON vote_ledger(ballotid);");
+          connection.Execute("CREATE INDEX idx_vote_ledger_anonvoter ON vote_ledger(anonvoterid);");
+          connection.Execute("CREATE INDEX idx_vote_ledger_hash ON vote_ledger(entryhash);");
+        }
+
+        if (!TableExists(connection, "ballot_chain_status"))
+        {
+          connection.Execute(
+            @"CREATE TABLE ballot_chain_status (
+              ballotid VARCHAR(36) PRIMARY KEY NOT NULL,
+              latestsequencenumber BIGINT NOT NULL DEFAULT 0,
+              latesthash VARCHAR(64) NOT NULL DEFAULT '0000000000000000000000000000000000000000000000000000000000000000',
+              totalentries BIGINT NOT NULL DEFAULT 0,
+              FOREIGN KEY (ballotid) REFERENCES ballots(id) ON DELETE CASCADE
+            );"
+          );
+        }
       }
     }
   }

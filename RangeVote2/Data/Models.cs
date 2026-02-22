@@ -226,4 +226,63 @@
         public List<string> Errors { get; set; } = new();
         public bool Success => Errors.Count == 0;
     }
+
+    // ========== VOTE INTEGRITY / HASH CHAIN MODELS ==========
+
+    public class VoteLedgerEntry
+    {
+        public Guid Id { get; set; }
+        public Guid BallotId { get; set; }
+        public string AnonVoterId { get; set; } = string.Empty;
+        public Guid CandidateId { get; set; }
+        public int Score { get; set; }
+        public string Action { get; set; } = "CAST"; // "CAST" or "UPDATE"
+        public int? PreviousScore { get; set; }
+        public long SequenceNumber { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string PreviousHash { get; set; } = string.Empty;
+        public string EntryHash { get; set; } = string.Empty;
+    }
+
+    public class BallotChainStatus
+    {
+        public Guid BallotId { get; set; }
+        public long LatestSequenceNumber { get; set; }
+        public string LatestHash { get; set; } = new string('0', 64);
+        public long TotalEntries { get; set; }
+    }
+
+    public class VoteReceiptViewModel
+    {
+        public string ReceiptHash { get; set; } = string.Empty;
+        public string BallotName { get; set; } = string.Empty;
+        public DateTime IssuedAt { get; set; }
+        public int CandidatesVotedOn { get; set; }
+    }
+
+    public class ChainVerificationResult
+    {
+        public Guid BallotId { get; set; }
+        public long TotalEntries { get; set; }
+        public long EntriesVerified { get; set; }
+        public bool IsValid { get; set; }
+        public List<ChainVerificationError> Errors { get; set; } = new();
+        public DateTime VerifiedAt { get; set; }
+        public TimeSpan VerificationDuration { get; set; }
+    }
+
+    public class ChainVerificationError
+    {
+        public long SequenceNumber { get; set; }
+        public string ExpectedHash { get; set; } = string.Empty;
+        public string ActualHash { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    public class BallotIntegrityStatus
+    {
+        public bool ChainIsValid { get; set; }
+        public long TotalLedgerEntries { get; set; }
+        public int UniqueVotersInChain { get; set; }
+    }
 }

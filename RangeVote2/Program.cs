@@ -42,6 +42,9 @@ builder.Services.AddHostedService<BallotClosureService>();
 // Add theme service
 builder.Services.AddScoped<IThemeService, ThemeService>();
 
+// Add vote chain integrity service
+builder.Services.AddSingleton<IVoteChainService, VoteChainService>();
+
 var app = builder.Build();
 
 app.UsePathBase(builder.Configuration["FolderName"]);

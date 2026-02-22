@@ -90,6 +90,16 @@ namespace RangeVote2.Data
         // ========== THEME PREFERENCE METHODS ==========
         Task UpdateUserThemeAsync(Guid userId, string theme);
         Task<string> GetUserThemeAsync(Guid userId);
+
+        // ========== VOTE CHAIN / INTEGRITY METHODS ==========
+        Task InsertLedgerEntryAsync(VoteLedgerEntry entry);
+        Task<BallotChainStatus?> GetChainStatusAsync(Guid ballotId);
+        Task UpsertChainStatusAsync(BallotChainStatus status);
+        Task<List<VoteLedgerEntry>> GetAllLedgerEntriesOrderedAsync(Guid ballotId);
+        Task<List<VoteLedgerEntry>> GetLedgerEntriesPagedAsync(Guid ballotId, int limit, int offset);
+        Task<long> GetLedgerEntryCountAsync(Guid ballotId);
+        Task<List<VoteLedgerEntry>> GetLatestEntriesForVoterAsync(Guid ballotId, string anonVoterId);
+        Task<int> GetUniqueVoterCountInLedgerAsync(Guid ballotId);
     }
 
     public class RangeVoteRepository : IRangeVoteRepository
@@ -1699,6 +1709,171 @@ namespace RangeVote2.Data
             );
 
             return theme ?? "plain";
+        }
+
+        // ========== VOTE CHAIN / INTEGRITY IMPLEMENTATIONS ==========
+
+        public async Task InsertLedgerEntryAsync(VoteLedgerEntry entry)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO vote_ledger (id, ballotid, anonvoterid, candidateid, score, action,
+                  previousscore, sequencenumber, createdat, previoushash, entryhash)
+                  VALUES (@Id, @BallotId, @AnonVoterId, @CandidateId, @Score, @Action,
+                  @PreviousScore, @SequenceNumber, @CreatedAt, @PreviousHash, @EntryHash)",
+                new
+                {
+                    Id = entry.Id.ToString(),
+                    BallotId = entry.BallotId.ToString(),
+                    entry.AnonVoterId,
+                    CandidateId = entry.CandidateId.ToString(),
+                    entry.Score,
+                    entry.Action,
+                    entry.PreviousScore,
+                    entry.SequenceNumber,
+                    entry.CreatedAt,
+                    entry.PreviousHash,
+                    entry.EntryHash
+                }
+            );
+        }
+
+        public async Task<BallotChainStatus?> GetChainStatusAsync(Guid ballotId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                "SELECT * FROM ballot_chain_status WHERE ballotid = @BallotId",
+                new { BallotId = ballotId.ToString() }
+            );
+
+            if (result == null) return null;
+
+            return new BallotChainStatus
+            {
+                BallotId = Guid.Parse((string)result.ballotid),
+                LatestSequenceNumber = (long)result.latestsequencenumber,
+                LatestHash = (string)result.latesthash,
+                TotalEntries = (long)result.totalentries
+            };
+        }
+
+        public async Task UpsertChainStatusAsync(BallotChainStatus status)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var existing = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                "SELECT ballotid FROM ballot_chain_status WHERE ballotid = @BallotId",
+                new { BallotId = status.BallotId.ToString() }
+            );
+
+            if (existing != null)
+            {
+                await connection.ExecuteAsync(
+                    @"UPDATE ballot_chain_status
+                      SET latestsequencenumber = @LatestSequenceNumber, latesthash = @LatestHash, totalentries = @TotalEntries
+                      WHERE ballotid = @BallotId",
+                    new
+                    {
+                        BallotId = status.BallotId.ToString(),
+                        status.LatestSequenceNumber,
+                        status.LatestHash,
+                        status.TotalEntries
+                    }
+                );
+            }
+            else
+            {
+                await connection.ExecuteAsync(
+                    @"INSERT INTO ballot_chain_status (ballotid, latestsequencenumber, latesthash, totalentries)
+                      VALUES (@BallotId, @LatestSequenceNumber, @LatestHash, @TotalEntries)",
+                    new
+                    {
+                        BallotId = status.BallotId.ToString(),
+                        status.LatestSequenceNumber,
+                        status.LatestHash,
+                        status.TotalEntries
+                    }
+                );
+            }
+        }
+
+        public async Task<List<VoteLedgerEntry>> GetAllLedgerEntriesOrderedAsync(Guid ballotId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var results = await connection.QueryAsync<dynamic>(
+                "SELECT * FROM vote_ledger WHERE ballotid = @BallotId ORDER BY sequencenumber ASC",
+                new { BallotId = ballotId.ToString() }
+            );
+
+            return results.Select(MapLedgerEntry).ToList();
+        }
+
+        public async Task<List<VoteLedgerEntry>> GetLedgerEntriesPagedAsync(Guid ballotId, int limit, int offset)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var results = await connection.QueryAsync<dynamic>(
+                "SELECT * FROM vote_ledger WHERE ballotid = @BallotId ORDER BY sequencenumber ASC LIMIT @Limit OFFSET @Offset",
+                new { BallotId = ballotId.ToString(), Limit = limit, Offset = offset }
+            );
+
+            return results.Select(MapLedgerEntry).ToList();
+        }
+
+        public async Task<long> GetLedgerEntryCountAsync(Guid ballotId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            return await connection.QueryFirstAsync<long>(
+                "SELECT COUNT(*) FROM vote_ledger WHERE ballotid = @BallotId",
+                new { BallotId = ballotId.ToString() }
+            );
+        }
+
+        public async Task<List<VoteLedgerEntry>> GetLatestEntriesForVoterAsync(Guid ballotId, string anonVoterId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var results = await connection.QueryAsync<dynamic>(
+                @"SELECT DISTINCT ON (candidateid) *
+                  FROM vote_ledger
+                  WHERE ballotid = @BallotId AND anonvoterid = @AnonVoterId
+                  ORDER BY candidateid, sequencenumber DESC",
+                new { BallotId = ballotId.ToString(), AnonVoterId = anonVoterId }
+            );
+
+            return results.Select(MapLedgerEntry).ToList();
+        }
+
+        public async Task<int> GetUniqueVoterCountInLedgerAsync(Guid ballotId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            return await connection.QueryFirstAsync<int>(
+                "SELECT COUNT(DISTINCT anonvoterid) FROM vote_ledger WHERE ballotid = @BallotId",
+                new { BallotId = ballotId.ToString() }
+            );
+        }
+
+        private static VoteLedgerEntry MapLedgerEntry(dynamic r)
+        {
+            return new VoteLedgerEntry
+            {
+                Id = Guid.Parse((string)r.id),
+                BallotId = Guid.Parse((string)r.ballotid),
+                AnonVoterId = (string)r.anonvoterid,
+                CandidateId = Guid.Parse((string)r.candidateid),
+                Score = (int)r.score,
+                Action = (string)r.action,
+                PreviousScore = (int?)r.previousscore,
+                SequenceNumber = (long)r.sequencenumber,
+                CreatedAt = (DateTime)r.createdat,
+                PreviousHash = (string)r.previoushash,
+                EntryHash = (string)r.entryhash
+            };
         }
     }
 

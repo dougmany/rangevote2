@@ -6,6 +6,7 @@
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
 @inject IRangeVoteRepository Repository
+@inject IVoteChainService ChainService
 
 @if (isLoading)
 {
@@ -45,7 +46,23 @@ else
         </div>
     }
 
-    <p class="mb-4"><strong>@voteCount</strong> @(voteCount == 1 ? "cow has" : "cows have") grazed</p>
+    <p class="mb-2"><strong>@voteCount</strong> @(voteCount == 1 ? "cow has" : "cows have") grazed</p>
+
+    @if (integrityStatus != null && integrityStatus.TotalLedgerEntries > 0)
+    {
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <span class="badge bg-success">Chain Verified</span>
+            <span class="text-muted small">
+                @integrityStatus.TotalLedgerEntries ledger entries &middot;
+                @integrityStatus.UniqueVotersInChain voters on chain
+            </span>
+            <a href="/audit?ballotId=@decisionId" class="btn btn-sm btn-outline-secondary">Verify</a>
+        </div>
+    }
+    else
+    {
+        <div class="mb-4"></div>
+    }
 
     <div class="results-list">
         @{
@@ -130,6 +147,7 @@ else
     private DateTime? closeDate;
     private int voteCount = 0;
     private Guid decisionId;
+    private BallotIntegrityStatus? integrityStatus;
 
     protected override async Task OnInitializedAsync()
     {
@@ -195,6 +213,9 @@ else
                 AvgScore = avgScore
             });
         }
+
+        // Load chain integrity status
+        integrityStatus = await ChainService.GetIntegrityStatusAsync(decisionId);
     }
 
     private async Task LoadLegacyResults()

@@ -1,52 +1,290 @@
-﻿@page "/audit"
+@page "/audit"
 @attribute [Authorize]
 
-<PageTitle>@ElectionId</PageTitle>
+<PageTitle>Chain Verification - range.vote</PageTitle>
 
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
-@inject RangeVoteRepository _repository
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IVoteChainService ChainService
+@inject IRangeVoteRepository Repository
+@inject AuthenticationStateProvider AuthStateProvider
 
-@if (ballots == null)
+@if (ballotId == null)
+{
+    <h1>Chain Verification</h1>
+    <p>Select a ballot from your <a href="/decisions">decisions</a> to verify its chain integrity.</p>
+}
+else if (isLoading)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <h1>Audit</h1>
+    <h1>Chain Verification</h1>
+    <h2 class="text-muted">@ballotName</h2>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>GUID</th>
-                <th>Name</th>
-                <th>Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var candidate in ballots.OrderBy(c => c.Guid).ThenByDescending(c => c.Score))
+    @* Receipt Verification Section *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Verify Your Receipt</h5>
+            <p class="card-text">Paste your receipt hash to verify your vote is correctly recorded in the chain.</p>
+            <div class="d-flex gap-2">
+                <input type="text" class="form-control" placeholder="Paste receipt hash..."
+                       @bind="receiptHashInput" />
+                <button class="btn btn-primary" @onclick="VerifyReceipt" disabled="@isVerifyingReceipt">
+                    @(isVerifyingReceipt ? "Checking..." : "Verify")
+                </button>
+            </div>
+            @if (receiptVerificationResult != null)
             {
-                <tr>
-                    <td>@candidate.Guid</td>
-                    <td>@candidate.Name</td>
-                    <td>@candidate.Score</td>
-                </tr>
+                @if (receiptVerificationResult.Value)
+                {
+                    <div class="alert alert-success mt-3 mb-0">
+                        <span><strong>Verified!</strong> Your receipt matches the current chain state. Your vote is intact.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        <span><strong>Mismatch!</strong> This receipt does not match the current chain state. This could mean votes were updated since the receipt was issued, or data has been tampered with.</span>
+                    </div>
+                }
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
+
+    @* Chain Integrity Section *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Chain Integrity Check</h5>
+            <p class="card-text">
+                Walk the entire hash chain from genesis, verifying every link.
+                This detects any tampering with historical vote records.
+            </p>
+            <button class="btn btn-warning" @onclick="RunChainVerification" disabled="@isVerifyingChain">
+                @(isVerifyingChain ? "Verifying..." : "Run Full Verification")
+            </button>
+
+            @if (chainResult != null)
+            {
+                <div class="mt-3">
+                    @if (chainResult.IsValid)
+                    {
+                        <div class="alert alert-success">
+                            <span><strong>Chain Valid</strong> - @chainResult.EntriesVerified entries verified in @(chainResult.VerificationDuration.TotalMilliseconds.ToString("F0"))ms. No tampering detected.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            <span><strong>Chain Integrity Failure</strong> - @chainResult.Errors.Count error(s) detected across @chainResult.EntriesVerified entries.</span>
+                        </div>
+                    }
+
+                    @if (chainResult.Errors.Any())
+                    {
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Seq #</th>
+                                    <th>Issue</th>
+                                    <th>Expected</th>
+                                    <th>Actual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var err in chainResult.Errors)
+                                {
+                                    <tr class="table-danger">
+                                        <td>@err.SequenceNumber</td>
+                                        <td>@err.Description</td>
+                                        <td><code>@Truncate(err.ExpectedHash, 16)</code></td>
+                                        <td><code>@Truncate(err.ActualHash, 16)</code></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Ledger Browser Section *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Anonymized Ledger</h5>
+            <p class="card-text">
+                Browse the append-only vote ledger. Voter identities are anonymized with one-way hashes.
+            </p>
+
+            @if (totalEntries > 0)
+            {
+                <p class="text-muted">Showing @((currentPage - 1) * pageSize + 1)-@Math.Min(currentPage * pageSize, totalEntries) of @totalEntries entries</p>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Seq</th>
+                                <th>Action</th>
+                                <th>Anon Voter</th>
+                                <th>Score</th>
+                                <th>Prev Score</th>
+                                <th>Entry Hash</th>
+                                <th>Timestamp (UTC)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entry in ledgerEntries)
+                            {
+                                <tr>
+                                    <td>@entry.SequenceNumber</td>
+                                    <td>
+                                        <span class="badge @(entry.Action == "CAST" ? "bg-success" : "bg-info")">
+                                            @entry.Action
+                                        </span>
+                                    </td>
+                                    <td><code>@Truncate(entry.AnonVoterId, 8)</code></td>
+                                    <td>@((entry.Score / 10.0).ToString("N1"))</td>
+                                    <td>@(entry.PreviousScore.HasValue ? (entry.PreviousScore.Value / 10.0).ToString("N1") : "-")</td>
+                                    <td><code>@Truncate(entry.EntryHash, 12)</code></td>
+                                    <td>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (totalPages > 1)
+                {
+                    <nav>
+                        <ul class="pagination pagination-sm">
+                            <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="PreviousPage">Previous</button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Page @currentPage of @totalPages</span>
+                            </li>
+                            <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="NextPage">Next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <p class="text-muted">No ledger entries yet. Votes recorded after this feature was enabled will appear here.</p>
+            }
+        </div>
+    </div>
+
+    <a href="/decisions" class="btn btn-secondary">Back to Pastures</a>
 }
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public String? ElectionId { get; set; }
-    List<DBCandidate>? ballots;
+    public Guid? ballotId { get; set; }
+
+    private bool isLoading = true;
+    private string ballotName = "";
+
+    // Receipt verification
+    private string receiptHashInput = "";
+    private bool? receiptVerificationResult;
+    private bool isVerifyingReceipt = false;
+
+    // Chain verification
+    private ChainVerificationResult? chainResult;
+    private bool isVerifyingChain = false;
+
+    // Ledger browser
+    private List<VoteLedgerEntry> ledgerEntries = new();
+    private long totalEntries = 0;
+    private int currentPage = 1;
+    private int pageSize = 25;
+    private long totalPages => (long)Math.Ceiling((double)totalEntries / pageSize);
+
+    // Auth
+    private Guid userId;
 
     protected override async Task OnInitializedAsync()
     {
-        if (ElectionId is not null && ElectionId != "")
+        if (!ballotId.HasValue)
         {
-             ballots = await _repository.GetBallotsAsync(ElectionId);
+            isLoading = false;
+            return;
         }
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+                userId = Guid.Parse(userIdClaim.Value);
+        }
+
+        var ballot = await Repository.GetBallotMetadataAsync(ballotId.Value);
+        if (ballot != null)
+            ballotName = ballot.Name;
+
+        await LoadLedgerPage();
+        isLoading = false;
+    }
+
+    private async Task LoadLedgerPage()
+    {
+        if (!ballotId.HasValue) return;
+
+        totalEntries = await ChainService.GetLedgerCountAsync(ballotId.Value);
+        ledgerEntries = await ChainService.GetLedgerEntriesAsync(
+            ballotId.Value, pageSize, (currentPage - 1) * pageSize);
+    }
+
+    private async Task VerifyReceipt()
+    {
+        if (!ballotId.HasValue || string.IsNullOrWhiteSpace(receiptHashInput)) return;
+
+        isVerifyingReceipt = true;
+        receiptVerificationResult = await ChainService.VerifyReceiptAsync(
+            receiptHashInput.Trim(), ballotId.Value, userId);
+        isVerifyingReceipt = false;
+    }
+
+    private async Task RunChainVerification()
+    {
+        if (!ballotId.HasValue) return;
+
+        isVerifyingChain = true;
+        chainResult = await ChainService.VerifyChainAsync(ballotId.Value);
+        isVerifyingChain = false;
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadLedgerPage();
+        }
+    }
+
+    private async Task PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadLedgerPage();
+        }
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value)) return "";
+        return value.Length <= maxLength ? value : value[..maxLength] + "...";
     }
 }
