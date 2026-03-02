@@ -117,6 +117,9 @@ namespace RangeVote2.Data
         if (!ColumnExists(connection, "candidate", "image_link"))
           connection.Execute("ALTER TABLE candidate ADD COLUMN image_link VARCHAR(500);");
 
+        if (!ColumnExists(connection, "ballot_share_links", "guestuserid"))
+          connection.Execute("ALTER TABLE ballot_share_links ADD COLUMN guestuserid VARCHAR(36) REFERENCES users(id);");
+
         // ========== NEW BALLOT SYSTEM TABLES ==========
 
         if (!TableExists(connection, "ballots"))

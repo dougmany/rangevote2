@@ -93,6 +93,7 @@
         public DateTime? ExpiresAt { get; set; }
         public bool IsActive { get; set; } = true;
         public int UseCount { get; set; } // Track usage
+        public Guid? GuestUserId { get; set; } // Pre-created guest user for SSO share links
     }
 
     // User-based invitations

@@ -95,6 +95,27 @@ else
         </div>
     }
 
+    @if (canManageMembers)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Invite to Herd</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2">
+                    <input type="email" class="form-control" @bind="inviteEmail" placeholder="user@example.com" />
+                    <select class="form-control" style="max-width: 150px;" @bind="inviteRole">
+                        <option value="Member">Cow</option>
+                        <option value="Admin">Ranch Hand</option>
+                    </select>
+                    <button class="btn btn-primary" @onclick="InviteMember" disabled="@isInviting">
+                        @if (isInviting) { <span>Inviting...</span> } else { <span>Invite</span> }
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="mb-0">Cows in the Herd (@members.Count)</h5>
@@ -120,12 +141,24 @@ else
                                 {
                                     <span class="badge bg-secondary ms-2">Cow</span>
                                 }
+                                @if (member.UserId == userId)
+                                {
+                                    <span class="text-muted ms-2">(You)</span>
+                                }
                                 <br />
                                 <small class="text-muted">Joined the herd @member.JoinedAt.ToString("MMM dd, yyyy")</small>
                             </div>
-                            @if (member.UserId == userId && !isOwner)
+                            @if (canManageMembers && member.Role != "Owner" && member.UserId != userId)
                             {
-                                <span class="text-muted">(You)</span>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <select class="form-control form-control-sm" style="max-width: 140px;"
+                                            value="@member.Role"
+                                            @onchange="(e) => ChangeRole(member.UserId, e.Value?.ToString())">
+                                        <option value="Member">Cow</option>
+                                        <option value="Admin">Ranch Hand</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveMember(member.UserId)">Remove</button>
+                                </div>
                             }
                         </div>
                     }
@@ -185,6 +218,10 @@ else
     private Guid userId;
     private bool isOwner = false;
     private bool isMember = false;
+    private bool canManageMembers = false;
+    private string inviteEmail = "";
+    private string inviteRole = "Member";
+    private bool isInviting = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -215,6 +252,8 @@ else
             {
                 isOwner = group.OwnerId == userId;
                 isMember = await Repository.IsUserMemberOfOrganizationAsync(GroupId, userId);
+                var myRole = await Repository.GetUserRoleInOrganizationAsync(GroupId, userId);
+                canManageMembers = isOwner || myRole == "Admin";
 
                 if (!isMember)
                 {
@@ -308,6 +347,66 @@ else
         {
             errorMessage = $"Error dispersing herd: {ex.Message}";
             isDeleting = false;
+        }
+    }
+
+    private async Task InviteMember()
+    {
+        if (string.IsNullOrWhiteSpace(inviteEmail))
+        {
+            errorMessage = "Email is required.";
+            return;
+        }
+
+        try
+        {
+            isInviting = true;
+            errorMessage = null;
+
+            await Repository.InviteUserToOrganizationAsync(GroupId, inviteEmail, inviteRole);
+            inviteEmail = "";
+            successMessage = "New cow added to the herd!";
+            await LoadGroup();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error inviting: {ex.Message}";
+        }
+        finally
+        {
+            isInviting = false;
+        }
+    }
+
+    private async Task ChangeRole(Guid memberId, string? newRole)
+    {
+        if (string.IsNullOrEmpty(newRole)) return;
+
+        try
+        {
+            errorMessage = null;
+            await Repository.UpdateOrganizationMemberRoleAsync(GroupId, memberId, newRole);
+            successMessage = "Role updated!";
+            await LoadGroup();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error changing role: {ex.Message}";
+        }
+    }
+
+    private async Task RemoveMember(Guid memberId)
+    {
+        try
+        {
+            errorMessage = null;
+            await Repository.RemoveOrganizationMemberAsync(GroupId, memberId);
+            successMessage = "Member removed from the herd.";
+            await LoadGroup();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error removing member: {ex.Message}";
         }
     }
 }

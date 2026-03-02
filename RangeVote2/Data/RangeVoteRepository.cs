@@ -43,6 +43,8 @@ namespace RangeVote2.Data
         Task<BallotShareLink?> GetShareLinkByTokenAsync(string token);
         Task DeactivateShareLinkAsync(Guid shareLinkId);
         Task IncrementShareLinkUseCountAsync(Guid shareLinkId);
+        Task GrantPermissionFromShareLinkAsync(Guid ballotId, Guid userId, UserPermission permission);
+        Task<BallotShareLink> CreateGuestShareLinkAsync(Guid ballotId, ShareLinkPermission permission, Guid creatorId, Guid guestUserId, DateTime? expiresAt = null);
 
         // User Permissions
         Task<BallotPermission> InviteUserAsync(Guid ballotId, string email, UserPermission permission, Guid inviterId);
@@ -77,6 +79,9 @@ namespace RangeVote2.Data
         Task<List<OrganizationMemberListItem>> GetOrganizationMembersAsync(Guid orgId);
         Task<bool> IsUserMemberOfOrganizationAsync(Guid orgId, Guid userId);
         Task<string?> GetUserRoleInOrganizationAsync(Guid orgId, Guid userId);
+        Task InviteUserToOrganizationAsync(Guid orgId, string email, string role);
+        Task UpdateOrganizationMemberRoleAsync(Guid orgId, Guid userId, string newRole);
+        Task RemoveOrganizationMemberAsync(Guid orgId, Guid userId);
 
         // ========== BALLOT MARKETPLACE METHODS ==========
         Task<List<PublicBallotListItem>> GetPublicBallotsAsync(string? searchTerm, Guid? organizationId, bool? closingSoon, Guid excludeUserId);
@@ -508,7 +513,8 @@ namespace RangeVote2.Data
             await connection.ExecuteAsync(
                 @"UPDATE ballots
                   SET name = @Name, description = @Description, closedate = @CloseDate,
-                      status = @Status, isopen = @IsOpen, ispublic = @IsPublic
+                      status = @Status, isopen = @IsOpen, ispublic = @IsPublic,
+                      organizationid = @OrganizationId
                   WHERE id = @Id",
                 new
                 {
@@ -518,7 +524,8 @@ namespace RangeVote2.Data
                     ballot.CloseDate,
                     Status = ballot.Status.ToString(),
                     ballot.IsOpen,
-                    ballot.IsPublic
+                    ballot.IsPublic,
+                    OrganizationId = ballot.OrganizationId?.ToString()
                 }
             );
         }
@@ -785,7 +792,8 @@ namespace RangeVote2.Data
                     CreatedBy = Guid.Parse((string)link.createdby),
                     ExpiresAt = (DateTime?)link.expiresat,
                     IsActive = (bool)link.isactive,
-                    UseCount = (int)link.usecount
+                    UseCount = (int)link.usecount,
+                    GuestUserId = link.guestuserid != null ? Guid.Parse((string)link.guestuserid) : null
                 });
             }
 
@@ -813,7 +821,8 @@ namespace RangeVote2.Data
                 CreatedBy = Guid.Parse((string)link.createdby),
                 ExpiresAt = (DateTime?)link.expiresat,
                 IsActive = (bool)link.isactive,
-                UseCount = (int)link.usecount
+                UseCount = (int)link.usecount,
+                GuestUserId = link.guestuserid != null ? Guid.Parse((string)link.guestuserid) : null
             };
         }
 
@@ -835,6 +844,85 @@ namespace RangeVote2.Data
                 "UPDATE ballot_share_links SET usecount = usecount + 1 WHERE id = @Id",
                 new { Id = shareLinkId.ToString() }
             );
+        }
+
+        public async Task GrantPermissionFromShareLinkAsync(Guid ballotId, Guid userId, UserPermission permission)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO ballot_permissions (id, ballotid, userid, permission, createdat, createdby, acceptedat)
+                  VALUES (@Id, @BallotId, @UserId, @Permission, @CreatedAt, @CreatedBy, @AcceptedAt)",
+                new
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    BallotId = ballotId.ToString(),
+                    UserId = userId.ToString(),
+                    Permission = permission.ToString(),
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userId.ToString(),
+                    AcceptedAt = DateTime.UtcNow
+                }
+            );
+        }
+
+        public async Task<BallotShareLink> CreateGuestShareLinkAsync(Guid ballotId, ShareLinkPermission permission, Guid creatorId, Guid guestUserId, DateTime? expiresAt = null)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var tokenBytes = new byte[32];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(tokenBytes);
+            }
+            var token = Convert.ToBase64String(tokenBytes)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .Replace("=", "");
+
+            var shareLink = new BallotShareLink
+            {
+                Id = Guid.NewGuid(),
+                BallotId = ballotId,
+                ShareToken = token,
+                Permission = permission,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = creatorId,
+                ExpiresAt = expiresAt,
+                IsActive = true,
+                UseCount = 0,
+                GuestUserId = guestUserId
+            };
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO ballot_share_links (id, ballotid, sharetoken, permission, createdat, createdby, expiresat, isactive, usecount, guestuserid)
+                  VALUES (@Id, @BallotId, @ShareToken, @Permission, @CreatedAt, @CreatedBy, @ExpiresAt, @IsActive, @UseCount, @GuestUserId)",
+                new
+                {
+                    Id = shareLink.Id.ToString(),
+                    BallotId = shareLink.BallotId.ToString(),
+                    ShareToken = shareLink.ShareToken,
+                    Permission = shareLink.Permission.ToString(),
+                    CreatedAt = shareLink.CreatedAt,
+                    CreatedBy = shareLink.CreatedBy.ToString(),
+                    ExpiresAt = shareLink.ExpiresAt,
+                    IsActive = shareLink.IsActive,
+                    UseCount = shareLink.UseCount,
+                    GuestUserId = guestUserId.ToString()
+                }
+            );
+
+            // Pre-grant ballot permission to the guest user
+            var userPermission = permission switch
+            {
+                ShareLinkPermission.View => UserPermission.Viewer,
+                ShareLinkPermission.Vote => UserPermission.Voter,
+                ShareLinkPermission.Admin => UserPermission.Admin,
+                _ => UserPermission.Voter
+            };
+            await GrantPermissionFromShareLinkAsync(ballotId, guestUserId, userPermission);
+
+            return shareLink;
         }
 
         // User Permissions
@@ -1360,6 +1448,78 @@ namespace RangeVote2.Data
             );
 
             return role;
+        }
+
+        public async Task InviteUserToOrganizationAsync(Guid orgId, string email, string role)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var org = await GetOrganizationAsync(orgId);
+            if (org == null)
+                throw new InvalidOperationException("Organization not found");
+
+            // Look up user by email
+            var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
+                "SELECT id FROM users WHERE email = @Email",
+                new { Email = email.Trim().ToLower() }
+            );
+            if (user == null)
+                throw new InvalidOperationException("No user found with that email address.");
+
+            var userId = (string)user.id;
+
+            // Check if already a member
+            var existing = await connection.QueryFirstOrDefaultAsync<string>(
+                "SELECT id FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
+                new { OrgId = orgId.ToString(), UserId = userId }
+            );
+            if (existing != null)
+                throw new InvalidOperationException("This user is already a member of the group.");
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO organization_members (id, organizationid, userid, role, joinedat)
+                  VALUES (@Id, @OrganizationId, @UserId, @Role, @JoinedAt)",
+                new
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrganizationId = orgId.ToString(),
+                    UserId = userId,
+                    Role = role,
+                    JoinedAt = DateTime.UtcNow
+                }
+            );
+        }
+
+        public async Task UpdateOrganizationMemberRoleAsync(Guid orgId, Guid userId, string newRole)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var org = await GetOrganizationAsync(orgId);
+            if (org == null)
+                throw new InvalidOperationException("Organization not found");
+            if (org.OwnerId == userId)
+                throw new InvalidOperationException("Cannot change the owner's role.");
+
+            await connection.ExecuteAsync(
+                "UPDATE organization_members SET role = @Role WHERE organizationid = @OrgId AND userid = @UserId",
+                new { Role = newRole, OrgId = orgId.ToString(), UserId = userId.ToString() }
+            );
+        }
+
+        public async Task RemoveOrganizationMemberAsync(Guid orgId, Guid userId)
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var org = await GetOrganizationAsync(orgId);
+            if (org == null)
+                throw new InvalidOperationException("Organization not found");
+            if (org.OwnerId == userId)
+                throw new InvalidOperationException("Cannot remove the owner from the group.");
+
+            await connection.ExecuteAsync(
+                "DELETE FROM organization_members WHERE organizationid = @OrgId AND userid = @UserId",
+                new { OrgId = orgId.ToString(), UserId = userId.ToString() }
+            );
         }
 
         // ========== BALLOT MARKETPLACE IMPLEMENTATIONS ==========

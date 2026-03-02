@@ -6,6 +6,7 @@
 @inject IShareService ShareService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthenticationService AuthService
 @attribute [Authorize]
 
 <PageTitle>Manage Decision - GroupChoice</PageTitle>
@@ -47,6 +48,18 @@ else if (decision != null)
                 <div class="form-group">
                     <label>Description</label>
                     <textarea class="form-control" @bind="decision.Description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Group</label>
+                    <select class="form-control" value="@(decision.OrganizationId?.ToString() ?? "")"
+                            @onchange="OnGroupChanged">
+                        <option value="">Personal (no group)</option>
+                        @foreach (var org in userOrganizations)
+                        {
+                            <option value="@org.Id">@org.Name</option>
+                        }
+                    </select>
+                    <div class="form-text">Assign this decision to a group so all members can access it.</div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
@@ -296,6 +309,7 @@ else if (decision != null)
     private string? errorMessage;
     private bool canDelete = false;
     private Guid userId;
+    private List<OrganizationListItem> userOrganizations = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -346,6 +360,7 @@ else if (decision != null)
             choices = await Repository.GetCandidatesAsync(decisionId);
             shareLinks = await Repository.GetShareLinksAsync(decisionId);
             permissions = await Repository.GetBallotPermissionsAsync(decisionId);
+            userOrganizations = await Repository.GetOrganizationsForUserAsync(userId);
         }
         catch (Exception ex)
         {
@@ -355,6 +370,12 @@ else if (decision != null)
         {
             isLoading = false;
         }
+    }
+
+    private void OnGroupChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        decision!.OrganizationId = string.IsNullOrEmpty(value) ? null : Guid.Parse(value);
     }
 
     private async Task SaveDetails()
@@ -453,7 +474,8 @@ else if (decision != null)
     {
         try
         {
-            await Repository.CreateShareLinkAsync(decisionId, newLinkPermission, userId);
+            var guestUser = await AuthService.CreateGuestUserAsync("Guest Voter");
+            await Repository.CreateGuestShareLinkAsync(decisionId, newLinkPermission, userId, guestUser.Id);
             await LoadDecision();
         }
         catch (Exception ex)

@@ -1,0 +1,87 @@
+@page "/vote/link"
+
+@using RangeVote2.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IRangeVoteRepository Repository
+@inject IAuthenticationService AuthService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+    <a href="/" class="btn btn-secondary">Home</a>
+}
+else
+{
+    <p><em>Joining the pasture...</em></p>
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "t")]
+    public string? Token { get; set; }
+
+    private string? errorMessage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            errorMessage = "No share link provided.";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var shareLink = await Repository.GetShareLinkByTokenAsync(Token);
+            if (shareLink == null || !shareLink.IsActive)
+            {
+                errorMessage = "This share link is invalid or has been deactivated.";
+                StateHasChanged();
+                return;
+            }
+
+            if (shareLink.ExpiresAt.HasValue && shareLink.ExpiresAt.Value < DateTime.UtcNow)
+            {
+                errorMessage = "This share link has expired.";
+                StateHasChanged();
+                return;
+            }
+
+            if (!shareLink.GuestUserId.HasValue)
+            {
+                errorMessage = "This share link is not configured for guest access.";
+                StateHasChanged();
+                return;
+            }
+
+            // Look up the pre-created guest user
+            var guestUser = await AuthService.GetUserByIdAsync(shareLink.GuestUserId.Value);
+            if (guestUser == null)
+            {
+                errorMessage = "Guest user not found.";
+                StateHasChanged();
+                return;
+            }
+
+            // Auto-sign-in as the guest user
+            var customAuth = (CustomAuthenticationStateProvider)AuthStateProvider;
+            await customAuth.MarkUserAsAuthenticated(guestUser);
+
+            // Track usage
+            await Repository.IncrementShareLinkUseCountAsync(shareLink.Id);
+
+            // Redirect to the vote page
+            NavigationManager.NavigateTo($"/vote?ballotId={shareLink.BallotId}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error joining: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}

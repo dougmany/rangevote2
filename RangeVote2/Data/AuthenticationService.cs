@@ -11,6 +11,7 @@ namespace RangeVote2.Data
         Task<ApplicationUser?> GetUserByIdAsync(Guid userId);
         Task<ApplicationUser?> GetUserByEmailAsync(string email);
         Task UpdateLastLoginAsync(Guid userId);
+        Task<ApplicationUser> CreateGuestUserAsync(string displayName = "Guest Voter");
     }
 
     public class AuthenticationService : IAuthenticationService
@@ -139,6 +140,41 @@ namespace RangeVote2.Data
                 "UPDATE users SET lastloginat = @LastLoginAt WHERE id = @Id",
                 new { Id = userId.ToString(), LastLoginAt = DateTime.UtcNow }
             );
+        }
+
+        public async Task<ApplicationUser> CreateGuestUserAsync(string displayName = "Guest Voter")
+        {
+            using var connection = new NpgsqlConnection(_config.DatabaseName);
+
+            var userId = Guid.NewGuid();
+            var now = DateTime.UtcNow;
+            var guestEmail = $"guest-{userId}@guest.local";
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString());
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO users (id, email, passwordhash, displayname, organizationid, createdat, lastloginat)
+                  VALUES (@Id, @Email, @PasswordHash, @DisplayName, @OrganizationId, @CreatedAt, @LastLoginAt)",
+                new
+                {
+                    Id = userId.ToString(),
+                    Email = guestEmail,
+                    PasswordHash = passwordHash,
+                    DisplayName = displayName,
+                    OrganizationId = (string?)null,
+                    CreatedAt = now,
+                    LastLoginAt = now
+                }
+            );
+
+            return new ApplicationUser
+            {
+                Id = userId,
+                Email = guestEmail,
+                PasswordHash = passwordHash,
+                DisplayName = displayName,
+                CreatedAt = now,
+                LastLoginAt = now
+            };
         }
     }
 }
