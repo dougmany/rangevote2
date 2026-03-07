@@ -968,20 +968,6 @@ select.form-control {
     position: relative;
 }
 
-/* Fade indicator at bottom of scrollable list */
-.vote-list-pane::after {
-    content: '';
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: linear-gradient(to bottom, transparent, var(--color-bg) 90%);
-    pointer-events: none;
-    margin-top: -60px;
-    display: block;
-}
-
 .vote-detail-pane {
     flex: 1;
     position: sticky;
