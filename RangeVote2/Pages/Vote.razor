@@ -5,6 +5,7 @@
 
 @using RangeVote2.Data
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.JSInterop
 @inject IRangeVoteRepository Repository
@@ -61,58 +62,80 @@ else if (choices.Any())
     <div class="vote-layout">
         @* Left Pane: Voting List *@
         <div class="vote-list-pane">
-            @foreach (var choice in choices.OrderByDescending(t => t.Score))
+            <div class="d-flex gap-2 align-items-center mb-3">
+                <label class="fw-semibold mb-0" for="ballot-search">Filter</label>
+                <input id="ballot-search"
+                       class="form-control"
+                       style="max-width: 320px;"
+                       placeholder="Filter by name or description"
+                       value="@searchText"
+                       @oninput="OnSearchInput"
+                       aria-label="Filter ballots" />
+            </div>
+
+            @{
+                var filteredChoices = FilteredChoices.OrderByDescending(t => t.Score).ToList();
+            }
+
+            @if (!filteredChoices.Any())
             {
-                var rank = GetRank(choice.Id);
-                var isSelected = choice.Id == selectedChoiceId;
+                <div class="text-muted">No ballots match your filter.</div>
+            }
+            else
+            {
+                @foreach (var choice in filteredChoices)
+                {
+                    var rank = GetRank(choice.Id);
+                    var isSelected = choice.Id == selectedChoiceId;
 
-                <div class="vote-list-item @(isSelected ? "selected" : "")"
-                     @onclick="@(() => SelectChoice(choice.Id))">
+                    <div class="vote-list-item @(isSelected ? "selected" : "")"
+                         @onclick="@(() => SelectChoice(choice.Id))">
 
-                    @* Rank Badge *@
-                    <div class="vote-rank-badge rank-@rank">
-                        #@rank
-                    </div>
+                        @* Rank Badge *@
+                        <div class="vote-rank-badge rank-@rank">
+                            #@rank
+                        </div>
 
-                    @* Thumbnail *@
-                    @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
-                    {
-                        <img src="@choice.ImageLink" alt="@choice.Name" class="vote-item-thumbnail" />
-                    }
-
-                    @* Content *@
-                    <div class="vote-item-content">
-                        <div class="vote-item-name">@choice.Name</div>
-                        @if (!string.IsNullOrWhiteSpace(choice.Description))
+                        @* Thumbnail *@
+                        @if (!string.IsNullOrWhiteSpace(choice.ImageLink))
                         {
-                            <div class="vote-item-description">@choice.Description</div>
+                            <img src="@choice.ImageLink" alt="@choice.Name" class="vote-item-thumbnail" />
+                        }
+
+                        @* Content *@
+                        <div class="vote-item-content">
+                            <div class="vote-item-name">@choice.Name</div>
+                            @if (!string.IsNullOrWhiteSpace(choice.Description))
+                            {
+                                <div class="vote-item-description">@choice.Description</div>
+                            }
+                        </div>
+
+                        @* Compact Controls *@
+                        @if (!isClosed)
+                        {
+                            <div class="vote-item-controls" @onclick:stopPropagation="true">
+                                <button class="vote-btn-compact vote-btn-down"
+                                        @onclick="@(() => DecrementScore(choice.Id, 10))"
+                                        title="Much less tasty!">−−</button>
+                                <button class="vote-btn-compact vote-btn-down-small"
+                                        @onclick="@(() => DecrementScore(choice.Id, 1))"
+                                        title="Slightly less tasty">−</button>
+                                <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
+                                <button class="vote-btn-compact vote-btn-up-small"
+                                        @onclick="@(() => IncrementScore(choice.Id, 1))"
+                                        title="Slightly tastier">+</button>
+                                <button class="vote-btn-compact vote-btn-up"
+                                        @onclick="@(() => IncrementScore(choice.Id, 10))"
+                                        title="Much tastier!">++</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
                         }
                     </div>
-
-                    @* Compact Controls *@
-                    @if (!isClosed)
-                    {
-                        <div class="vote-item-controls" @onclick:stopPropagation="true">
-                            <button class="vote-btn-compact vote-btn-down"
-                                    @onclick="@(() => DecrementScore(choice.Id, 10))"
-                                    title="Much less tasty!">−−</button>
-                            <button class="vote-btn-compact vote-btn-down-small"
-                                    @onclick="@(() => DecrementScore(choice.Id, 1))"
-                                    title="Slightly less tasty">−</button>
-                            <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
-                            <button class="vote-btn-compact vote-btn-up-small"
-                                    @onclick="@(() => IncrementScore(choice.Id, 1))"
-                                    title="Slightly tastier">+</button>
-                            <button class="vote-btn-compact vote-btn-up"
-                                    @onclick="@(() => IncrementScore(choice.Id, 10))"
-                                    title="Much tastier!">++</button>
-                        </div>
-                    }
-                    else
-                    {
-                        <span class="vote-score-compact">@((choice.Score / 10.0).ToString("N1"))</span>
-                    }
-                </div>
+                }
             }
         </div>
 
@@ -295,6 +318,7 @@ else if (choices.Any())
     private string? decisionDescription;
     private Guid userId;
     private Guid currentDecisionId;
+    private string searchText = "";
 
     // Needs Map — derived from URL params + ballot metadata
     private string[] needTagIds = Array.Empty<string>();
@@ -304,6 +328,11 @@ else if (choices.Any())
     // Selection state for detail panel
     private Guid? selectedChoiceId = null;
     private VoteChoice? SelectedChoice => choices.FirstOrDefault(c => c.Id == selectedChoiceId);
+    private IEnumerable<VoteChoice> FilteredChoices => string.IsNullOrWhiteSpace(searchText)
+        ? choices
+        : choices.Where(c =>
+            (!string.IsNullOrWhiteSpace(c.Name) && c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(c.Description) && c.Description.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
 
     protected override async Task OnInitializedAsync()
     {
@@ -421,6 +450,28 @@ else if (choices.Any())
     {
         selectedChoiceId = id;
         StateHasChanged();
+    }
+
+    void OnSearchInput(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? string.Empty;
+        EnsureSelectionWithinFilter();
+    }
+
+    void EnsureSelectionWithinFilter()
+    {
+        var filtered = FilteredChoices.OrderByDescending(c => c.Score).ToList();
+
+        if (!filtered.Any())
+        {
+            selectedChoiceId = null;
+            return;
+        }
+
+        if (selectedChoiceId == null || !filtered.Any(c => c.Id == selectedChoiceId))
+        {
+            selectedChoiceId = filtered.First().Id;
+        }
     }
 
     int GetRank(Guid choiceId)
