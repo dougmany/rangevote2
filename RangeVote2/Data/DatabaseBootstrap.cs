@@ -139,6 +139,7 @@ namespace RangeVote2.Data
               ispublic BOOLEAN NOT NULL DEFAULT FALSE,
               candidatecount INTEGER NOT NULL DEFAULT 0,
               votecount INTEGER NOT NULL DEFAULT 0,
+              needs_map_policy_area_slug VARCHAR(200),
               FOREIGN KEY (ownerid) REFERENCES users(id),
               FOREIGN KEY (organizationid) REFERENCES organizations(id)
             );"
@@ -156,6 +157,9 @@ namespace RangeVote2.Data
             connection.Execute("ALTER TABLE ballots ADD COLUMN ispublic BOOLEAN NOT NULL DEFAULT FALSE;");
             connection.Execute("CREATE INDEX IF NOT EXISTS idx_ballots_public ON ballots(ispublic);");
           }
+
+          if (!ColumnExists(connection, "ballots", "needs_map_policy_area_slug"))
+            connection.Execute("ALTER TABLE ballots ADD COLUMN needs_map_policy_area_slug VARCHAR(200);");
         }
 
         if (!TableExists(connection, "ballot_candidates"))

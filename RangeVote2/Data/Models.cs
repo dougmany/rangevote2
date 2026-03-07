@@ -68,6 +68,7 @@
         public bool IsPublic { get; set; } // Discoverable in marketplace
         public int CandidateCount { get; set; } // Denormalized for display
         public int VoteCount { get; set; } // Denormalized for display
+        public string? NeedsMapPolicyAreaSlug { get; set; } // e.g. "gun-policy" — links ballot to needs.vote
     }
 
     // Candidate definitions for a ballot (not votes)
@@ -149,6 +150,17 @@
         public DateTime? CloseDate { get; set; }
         public bool IsPublic { get; set; } // Discoverable in marketplace
         public List<CreateCandidateModel> Candidates { get; set; } = new();
+        public string? NeedsMapPolicyAreaSlug { get; set; } // Optional: links this ballot to a needs.vote policy area
+    }
+
+    // ========== NEEDS MAP INTEGRATION MODELS ==========
+
+    // Bucket info returned from the Needs Map API after a need-tag is recorded
+    public class NeedsMapBucketInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string? ColorHex { get; set; }
     }
 
     public class CreateCandidateModel

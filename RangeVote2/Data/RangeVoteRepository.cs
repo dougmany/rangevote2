@@ -322,12 +322,13 @@ namespace RangeVote2.Data
                 IsOpen = true,
                 IsPublic = model.IsPublic,
                 CandidateCount = model.Candidates.Count,
-                VoteCount = 0
+                VoteCount = 0,
+                NeedsMapPolicyAreaSlug = string.IsNullOrWhiteSpace(model.NeedsMapPolicyAreaSlug) ? null : model.NeedsMapPolicyAreaSlug.Trim().ToLowerInvariant()
             };
 
             await connection.ExecuteAsync(
-                @"INSERT INTO ballots (id, name, description, ownerid, organizationid, status, createdat, closedate, isopen, ispublic, candidatecount, votecount)
-                  VALUES (@Id, @Name, @Description, @OwnerId, @OrganizationId, @Status, @CreatedAt, @CloseDate, @IsOpen, @IsPublic, @CandidateCount, @VoteCount)",
+                @"INSERT INTO ballots (id, name, description, ownerid, organizationid, status, createdat, closedate, isopen, ispublic, candidatecount, votecount, needs_map_policy_area_slug)
+                  VALUES (@Id, @Name, @Description, @OwnerId, @OrganizationId, @Status, @CreatedAt, @CloseDate, @IsOpen, @IsPublic, @CandidateCount, @VoteCount, @NeedsMapPolicyAreaSlug)",
                 new
                 {
                     Id = ballot.Id.ToString(),
@@ -341,7 +342,8 @@ namespace RangeVote2.Data
                     ballot.IsOpen,
                     ballot.IsPublic,
                     ballot.CandidateCount,
-                    ballot.VoteCount
+                    ballot.VoteCount,
+                    ballot.NeedsMapPolicyAreaSlug
                 }
             );
 
@@ -398,7 +400,8 @@ namespace RangeVote2.Data
                 IsOpen = (bool)r.isopen,
                 IsPublic = (bool)r.ispublic,
                 CandidateCount = (int)r.candidatecount,
-                VoteCount = (int)r.votecount
+                VoteCount = (int)r.votecount,
+                NeedsMapPolicyAreaSlug = (string?)r.needs_map_policy_area_slug
             };
         }
 
@@ -514,7 +517,8 @@ namespace RangeVote2.Data
                 @"UPDATE ballots
                   SET name = @Name, description = @Description, closedate = @CloseDate,
                       status = @Status, isopen = @IsOpen, ispublic = @IsPublic,
-                      organizationid = @OrganizationId
+                      organizationid = @OrganizationId,
+                      needs_map_policy_area_slug = @NeedsMapPolicyAreaSlug
                   WHERE id = @Id",
                 new
                 {
@@ -525,7 +529,8 @@ namespace RangeVote2.Data
                     Status = ballot.Status.ToString(),
                     ballot.IsOpen,
                     ballot.IsPublic,
-                    OrganizationId = ballot.OrganizationId?.ToString()
+                    OrganizationId = ballot.OrganizationId?.ToString(),
+                    NeedsMapPolicyAreaSlug = string.IsNullOrWhiteSpace(ballot.NeedsMapPolicyAreaSlug) ? null : ballot.NeedsMapPolicyAreaSlug.Trim().ToLowerInvariant()
                 }
             );
         }

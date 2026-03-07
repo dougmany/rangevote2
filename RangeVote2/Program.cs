@@ -45,6 +45,18 @@ builder.Services.AddScoped<IThemeService, ThemeService>();
 // Add vote chain integrity service
 builder.Services.AddSingleton<IVoteChainService, VoteChainService>();
 
+// Add Needs Map integration service
+var needsMapBaseUrl = builder.Configuration["NeedsMap:ApiBaseUrl"] ?? "https://api.needs.vote";
+var needsMapToken = builder.Configuration["NeedsMap:ApiToken"] ?? string.Empty;
+builder.Services.AddHttpClient<INeedsMapService, NeedsMapService>(client =>
+{
+    client.BaseAddress = new Uri(needsMapBaseUrl);
+    if (!string.IsNullOrEmpty(needsMapToken))
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", needsMapToken);
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
+
 var app = builder.Build();
 
 app.UsePathBase(builder.Configuration["FolderName"]);

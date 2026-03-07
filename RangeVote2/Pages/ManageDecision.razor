@@ -87,6 +87,14 @@ else if (decision != null)
                     </label>
                     <div class="form-text">Public decisions can be discovered and joined by anyone.</div>
                 </div>
+                <div class="form-group">
+                    <label>Needs Map Policy Area (optional)</label>
+                    <input type="text" class="form-control" @bind="decision.NeedsMapPolicyAreaSlug" placeholder="e.g. gun-policy, healthcare, housing" />
+                    <div class="form-text">
+                        Link this decision to a <a href="https://needs.vote" target="_blank">needs.vote</a> policy area so need-tags travel with votes.
+                        Use slug format (lowercase, hyphens). Leave blank if not applicable.
+                    </div>
+                </div>
                 <button class="btn btn-primary" @onclick="SaveDetails">Save Changes</button>
             </div>
         </div>

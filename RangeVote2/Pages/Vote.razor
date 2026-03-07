@@ -9,6 +9,7 @@
 @using Microsoft.JSInterop
 @inject IRangeVoteRepository Repository
 @inject IVoteChainService ChainService
+@inject INeedsMapService NeedsMapService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JSRuntime
@@ -30,6 +31,21 @@ else if (choices.Any())
         @if (!string.IsNullOrWhiteSpace(decisionDescription))
         {
             <p class="text-muted">@decisionDescription</p>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(nm_citizen) && needTagIds.Length > 0)
+        {
+            <div class="alert alert-info d-flex align-items-center gap-2">
+                <span>🗺️</span>
+                <span>
+                    You arrived from <strong>needs.vote</strong>. Your need-tag will be attached to your vote
+                    @if (!string.IsNullOrWhiteSpace(needsMapPolicyAreaSlug))
+                    {
+                        <span> for policy area <strong>@needsMapPolicyAreaSlug</strong></span>
+                    }
+                    .
+                </span>
+            </div>
         }
 
         @if (isClosed)
@@ -189,6 +205,20 @@ else if (choices.Any())
                     Save this receipt hash. You can use it to verify your vote was recorded correctly at any time.
                 </p>
 
+                @if (needsMapBuckets != null && needsMapBuckets.Length > 0)
+                {
+                    <div class="alert alert-success mt-3 mb-0">
+                        <strong>🗺️ Needs Map</strong> — Your vote has been tagged with:
+                        @foreach (var bucket in needsMapBuckets)
+                        {
+                            <span class="badge ms-1"
+                                  style="background-color: @(bucket.ColorHex ?? "#6c757d"); color: white;">
+                                @bucket.Name
+                            </span>
+                        }
+                    </div>
+                }
+
                 <div class="d-flex gap-2 mt-3">
                     <a href="/audit?ballotId=@currentDecisionId" class="btn btn-outline-primary">Verify Chain Integrity</a>
                     <a href="/decisions" class="btn btn-primary">Back to Pastures</a>
@@ -233,6 +263,15 @@ else if (choices.Any())
     [SupplyParameterFromQuery]
     public String? electionId { get; set; }
 
+    // Needs Map integration — populated when citizen arrives from needs.vote
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "nm_citizen")]
+    public string? nm_citizen { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "nm_tags")]
+    public string? nm_tags { get; set; } // comma-separated need tag UUIDs
+
     private class VoteChoice
     {
         public Guid Id { get; set; }
@@ -256,6 +295,11 @@ else if (choices.Any())
     private string? decisionDescription;
     private Guid userId;
     private Guid currentDecisionId;
+
+    // Needs Map — derived from URL params + ballot metadata
+    private string[] needTagIds = Array.Empty<string>();
+    private string? needsMapPolicyAreaSlug;
+    private NeedsMapBucketInfo[]? needsMapBuckets; // returned from API after vote
 
     // Selection state for detail panel
     private Guid? selectedChoiceId = null;
@@ -325,6 +369,11 @@ else if (choices.Any())
         decisionDescription = decision.Description;
         isClosed = decision.Status == BallotStatus.Closed;
         closeDate = decision.CloseDate;
+        needsMapPolicyAreaSlug = decision.NeedsMapPolicyAreaSlug;
+
+        // Parse Needs Map URL parameters
+        if (!string.IsNullOrWhiteSpace(nm_tags))
+            needTagIds = nm_tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // Get choices
         var decisionChoices = await Repository.GetCandidatesAsync(currentDecisionId);
@@ -438,6 +487,19 @@ else if (choices.Any())
                 showReceipt = true;
                 isSaving = false;
                 message = null;
+
+                // Notify Needs Map if citizen arrived from needs.vote with need-tags
+                if (!string.IsNullOrWhiteSpace(nm_citizen) &&
+                    needTagIds.Length > 0 &&
+                    !string.IsNullOrWhiteSpace(needsMapPolicyAreaSlug))
+                {
+                    needsMapBuckets = await NeedsMapService.SendNeedTagAsync(
+                        nm_citizen,
+                        receiptViewModel.ReceiptHash,
+                        needsMapPolicyAreaSlug,
+                        needTagIds,
+                        receiptViewModel.IssuedAt);
+                }
             }
             else if (!string.IsNullOrWhiteSpace(electionId) && candidates != null)
             {
