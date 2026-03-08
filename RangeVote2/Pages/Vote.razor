@@ -59,20 +59,20 @@ else if (choices.Any())
         }
     </div>
 
+    <div class="d-flex gap-2 align-items-center mb-3">
+        <label class="fw-semibold mb-0" for="ballot-search">Filter</label>
+        <input id="ballot-search"
+               class="form-control"
+               style="max-width: 320px;"
+               placeholder="Filter by name or description"
+               value="@searchText"
+               @oninput="OnSearchInput"
+               aria-label="Filter ballots" />
+    </div>
+
     <div class="vote-layout">
         @* Left Pane: Voting List *@
         <div class="vote-list-pane">
-            <div class="d-flex gap-2 align-items-center mb-3">
-                <label class="fw-semibold mb-0" for="ballot-search">Filter</label>
-                <input id="ballot-search"
-                       class="form-control"
-                       style="max-width: 320px;"
-                       placeholder="Filter by name or description"
-                       value="@searchText"
-                       @oninput="OnSearchInput"
-                       aria-label="Filter ballots" />
-            </div>
-
             @{
                 var filteredChoices = FilteredChoices.OrderByDescending(t => t.Score).ToList();
             }

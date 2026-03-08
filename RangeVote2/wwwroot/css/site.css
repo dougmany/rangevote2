@@ -955,23 +955,31 @@ select.form-control {
    ============================================ */
 
 .vote-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 0.42fr 0.58fr;
     gap: var(--spacing-xl);
-    align-items: flex-start;
+    align-items: stretch;
+    height: 80vh;
 }
 
 .vote-list-pane {
     flex: 0 0 40%;
-    max-height: calc(100vh - 200px);
+    height: 100%;
     overflow-y: auto;
     padding-right: var(--spacing-sm);
     position: relative;
+    background: var(--color-bg-muted);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .vote-detail-pane {
     flex: 1;
     position: sticky;
     top: var(--spacing-lg);
+    height: 100%;
     background: var(--color-bg);
     border: 3px solid var(--color-grass);
     border-radius: var(--radius-lg);
@@ -1663,7 +1671,10 @@ select.form-control {
 
     /* Split-pane mobile layout */
     .vote-layout {
+        display: flex;
         flex-direction: column;
+        align-items: stretch;
+        height: auto;
     }
 
     .vote-list-pane {
