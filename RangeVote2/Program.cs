@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using RangeVote2.Data;
+using System.IO;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
 using Dapper;
@@ -18,6 +20,16 @@ var config = new ApplicationConfig
     DatabaseName = builder.Configuration["DatabaseName"],
     ElectionIds = builder.Configuration["ElectionIds"]?.Split(",") ?? Array.Empty<string>()
 };
+
+// Persist DataProtection keys only when a directory is configured; otherwise use the default ephemeral store
+var keyDirectory = builder.Configuration["DataProtection:KeyDirectory"];
+var dataProtectionBuilder = builder.Services.AddDataProtection()
+    .SetApplicationName("RangeVote2");
+
+if (!string.IsNullOrWhiteSpace(keyDirectory))
+{
+    dataProtectionBuilder.PersistKeysToFileSystem(new DirectoryInfo(keyDirectory));
+}
 
 // Add services to the container.
 builder.Services.AddRazorPages();
